@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateClientDto } from './DTO\'S/CreateClient.dto';
+import { dateTimestampProvider } from 'rxjs/internal/scheduler/dateTimestampProvider';
 
 @Injectable()
 export class ClientService {
@@ -12,7 +13,7 @@ export class ClientService {
     createClient(clientDto:CreateClientDto) {
         
         this.clients.push(clientDto);
-        return {message: 'Client created successfully', clientDto};
+        return {message: 'Client created successfully', clientDto };
 
     }
     //GET
@@ -46,9 +47,8 @@ export class ClientService {
         this.clients.splice(index, 1);
         return {message: 'Client deleted successfully'};
     }
-    //POST
+    //post
     bookConsultation(id: number, data: { date: string; }) {
-        const client = this.getClientById(id);
     return { message: `Consultation booked for client ${id}`, data };
   }
 
