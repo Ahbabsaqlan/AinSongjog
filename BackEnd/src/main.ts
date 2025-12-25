@@ -4,19 +4,30 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  // Enable Global Validation Pipe (for DTOs)
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Strips properties not in DTO
-    forbidNonWhitelisted: true, // Throws error if extra props sent
-  }));
 
+  // Global Validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  // CORS (allow localhost + Vercel)
   app.enableCors({
-    origin: 'http://localhost:3000', // Allow Next.js frontend
+    origin: [
+      'http://localhost:3000',
+      'https://your-frontend.vercel.app', // 👈 CHANGE THIS
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  await app.listen(4000);
+  // IMPORTANT: use environment PORT
+  const port = process.env.PORT || 4000;
+  await app.listen(port);
+
+  console.log(`🚀 Server running on port ${port}`);
 }
+
 bootstrap();
