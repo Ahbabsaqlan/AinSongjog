@@ -1,0 +1,587 @@
+{
+	"info": {
+		"_postman_id": "ainshongjog-v2-full",
+		"name": "AinShongjog Full System Test",
+		"description": "Complete test suite including Auth, Profile Update, Admin Approval, Cases, and Appointments.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Client Journey",
+			"item": [
+				{
+					"name": "1.1 Client Signup Init",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"ahbabzm@gmail.com\",\n    \"dob\": \"1995-01-01\",\n    \"role\": \"CLIENT\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup/init",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup",
+								"init"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2 Client Verify OTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if(jsonData.signupToken) {",
+									"    pm.environment.set(\"signup_token\", jsonData.signupToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ahbabzm@gmail.com\",\n    \"otp\": \"123456\" \n    // CHECK EMAIL FOR CODE\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup/verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.3 Client Complete Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if(jsonData.userId) {",
+									"    pm.environment.set(\"client_id\", jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ahbabzm@gmail.com\",\n    \"signupToken\": \"{{signup_token}}\",\n    \"password\": \"client123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup",
+								"complete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.4 Client Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"client_token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ahbabzm@gmail.com\",\n    \"password\": \"client123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Lawyer Journey",
+			"item": [
+				{
+					"name": "2.1 Lawyer Signup Init",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Saul\",\n    \"lastName\": \"Goodman\",\n    \"email\": \"22-48108-2@student.aiub.edu\",\n    \"dob\": \"1980-01-01\",\n    \"role\": \"LAWYER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup/init",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup",
+								"init"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2 Lawyer Verify OTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if(jsonData.signupToken) {",
+									"    pm.environment.set(\"signup_token\", jsonData.signupToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"22-48108-2@student.aiub.edu\",\n    \"otp\": \"123456\" \n    // CHECK EMAIL FOR CODE\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup/verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3 Lawyer Complete Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if(jsonData.userId) {",
+									"    pm.environment.set(\"lawyer_id\", jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"22-48108-2@student.aiub.edu\",\n    \"signupToken\": \"{{signup_token}}\",\n    \"password\": \"lawyer123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"signup",
+								"complete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.4 Lawyer Login (Pending)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"lawyer_token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"22-48108-2@student.aiub.edu\",\n    \"password\": \"lawyer123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.5 Lawyer Update Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{lawyer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"barCouncilId\": \"BAR-9999\",\n    \"chamberAddress\": \"Dhaka High Court\",\n    \"hourlyRate\": 5000,\n    \"mobileNumber\": \"01700000000\",\n    \"bio\": \"Expert in Corporate Law\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/lawyer/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"lawyer",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Admin Actions",
+			"item": [
+				{
+					"name": "3.1 Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"admin_token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ahbabzami3@gmail.com\",\n    \"password\": \"admin123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2 Get Pending Lawyers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if(jsonData.length > 0) {",
+									"    pm.environment.set(\"pending_lawyer_id\", jsonData[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/pending-lawyers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pending-lawyers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.3 Approve Lawyer",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/approve-lawyer/{{pending_lawyer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"approve-lawyer",
+								"{{pending_lawyer_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Interactions (Search, Book, Case)",
+			"item": [
+				{
+					"name": "4.1 Search Lawyer (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/lawyers/search?query=Saul",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"lawyers",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "Saul"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.2 Book Appointment (Client)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lawyerId\": \"{{lawyer_id}}\",\n    \"date\": \"2025-01-20T10:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/appointments/book",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"appointments",
+								"book"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.3 Create Case (Lawyer)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{lawyer_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Property Dispute\",\n    \"caseNumber\": \"CASE-101\",\n    \"clientEmail\": \"client@test.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/cases",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cases"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.4 Get My Cases (Client)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{client_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cases",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cases"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		}
+	]
+}
