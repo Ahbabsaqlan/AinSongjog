@@ -61,21 +61,18 @@ import { ClientProfile } from './users/entities/client-profile.entity';
       inject: [ConfigService],
     }),
 
-    // Mailer Configuration
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         transport: {
-          // FIX: Use the built-in 'gmail' service. 
-          // This automatically handles Port 465/587 and SSL/TLS logic.
-          service: 'gmail', 
+          service: 'gmail', // <--- MAGIC LINE: Handles all port/SSL logic automatically
           auth: {
             user: config.get('MAIL_USER'),
             pass: config.get('MAIL_PASS'),
           },
         },
         defaults: {
-          from: `"AinShongjog Support" <${config.get('MAIL_FROM')}>`,
+          from: `"AinShongjog Support" <${config.get('MAIL_USER')}>`,
         },
         template: {
           dir: join(process.cwd(), 'dist', 'templates'),

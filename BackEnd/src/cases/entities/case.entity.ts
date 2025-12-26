@@ -25,11 +25,11 @@ export class Case {
   status: CaseStatus;
 
   // The Lawyer who manages the case
-  @ManyToOne(() => User, { eager: true })
+  @ManyToOne(() => User, { eager: true ,cascade: true})
   lawyer: User;
 
   // The Client assigned to the case
-  @ManyToOne(() => User, { eager: true })
+  @ManyToOne(() => User, { eager: true , cascade: true})
   client: User;
 
   @CreateDateColumn()
