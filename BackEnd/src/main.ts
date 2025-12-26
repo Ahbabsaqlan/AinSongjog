@@ -17,7 +17,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000',
-      'https://your-frontend.vercel.app', // 👈 CHANGE THIS
+      'https://ainsongjog.vercel.app', // 👈 CHANGE THIS
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
