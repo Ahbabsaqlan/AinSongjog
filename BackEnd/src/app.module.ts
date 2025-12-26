@@ -78,7 +78,7 @@ import { ClientProfile } from './users/entities/client-profile.entity';
           from: config.get('MAIL_USER'),
         },
         template: {
-          dir: join(__dirname, 'templates'),
+          dir: process.cwd() + '/dist/templates',
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
