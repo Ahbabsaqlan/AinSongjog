@@ -68,18 +68,22 @@ import { ClientProfile } from './users/entities/client-profile.entity';
         transport: {
           host: config.get('MAIL_HOST'),
           port: +config.get('MAIL_PORT'),
-          // FIX: Automatically enable SSL if using port 465
-          secure: +config.get('MAIL_PORT') === 465, 
+          // Force secure to be true if port is 465
+          secure: true, 
           auth: {
             user: config.get('MAIL_USER'),
             pass: config.get('MAIL_PASS'),
           },
+          // Add this to prevent handshake timeouts
+          tls: {
+            rejectUnauthorized: false
+          }
         },
         defaults: {
           from: `"AinShongjog Support" <${config.get('MAIL_FROM')}>`,
         },
         template: {
-          dir: join(__dirname, 'templates'),
+          dir: join(process.cwd(), 'dist', 'templates'), // Keep this process.cwd() fix!
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
