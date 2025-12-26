@@ -44,7 +44,8 @@ import { ClientProfile } from './users/entities/client-profile.entity';
           ssl: {
             rejectUnauthorized: false
           }
-        }
+        },
+        family: 4,
       }),
       inject: [ConfigService],
     }),
