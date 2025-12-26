@@ -38,8 +38,13 @@ import { ClientProfile } from './users/entities/client-profile.entity';
         // IMPORTANT: Add ALL entities here so TypeORM knows about them
         entities: [User, Otp, LawyerProfile,ClientProfile, Case, Appointment], 
         
-        synchronize: true, // Only for development
+        synchronize: false, // Only for development
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        extra: {
+          ssl: {
+            rejectUnauthorized: false
+          }
+        }
       }),
       inject: [ConfigService],
     }),
