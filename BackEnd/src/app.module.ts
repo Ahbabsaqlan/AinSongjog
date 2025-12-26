@@ -66,24 +66,19 @@ import { ClientProfile } from './users/entities/client-profile.entity';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         transport: {
-          host: config.get('MAIL_HOST'),
-          port: +config.get('MAIL_PORT'),
-          // Force secure to be true if port is 465
-          secure: true, 
+          // FIX: Use the built-in 'gmail' service. 
+          // This automatically handles Port 465/587 and SSL/TLS logic.
+          service: 'gmail', 
           auth: {
             user: config.get('MAIL_USER'),
             pass: config.get('MAIL_PASS'),
           },
-          // Add this to prevent handshake timeouts
-          tls: {
-            rejectUnauthorized: false
-          }
         },
         defaults: {
           from: `"AinShongjog Support" <${config.get('MAIL_FROM')}>`,
         },
         template: {
-          dir: join(process.cwd(), 'dist', 'templates'), // Keep this process.cwd() fix!
+          dir: join(process.cwd(), 'dist', 'templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
