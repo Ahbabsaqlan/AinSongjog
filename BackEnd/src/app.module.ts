@@ -75,7 +75,7 @@ import { ClientProfile } from './users/entities/client-profile.entity';
           },
         },
         defaults: {
-          from: "AinSongjog",
+          from: config.get('MAIL_USER'),
         },
         template: {
           dir: join(__dirname, 'templates'),

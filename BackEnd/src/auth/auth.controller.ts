@@ -1,11 +1,18 @@
-import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Request,Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { InitSignupDto, VerifyOtpDto, CompleteSignupDto } from './dto/signup.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard'; // (Standard Passport Local Strategy Implementation required)
 
 @Controller('auth')
 export class AuthController {
+  mailerService: any;
   constructor(private authService: AuthService) {}
+
+  @Get('test-mail')
+  testmail() {
+    return this.authService.testMail();
+  }
+
 
   @Post('signup/init')
   initSignup(@Body() dto: InitSignupDto) {

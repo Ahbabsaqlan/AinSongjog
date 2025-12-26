@@ -30,6 +30,16 @@ export class AuthService {
     private mailerService: MailerService,
   ) {}
 
+  async testMail() {
+      await this.mailerService.sendMail({
+        to: process.env.MAIL_USER,
+        subject: 'Test OTP Email',
+        text: 'If you received this, email works.',
+      });
+  
+    return { ok: true };
+  }
+
   // 1. Init Signup
   async initSignup(dto: InitSignupDto) {
     const existingUser = await this.userRepo.findOne({ where: { email: dto.email } });
