@@ -8,16 +8,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
 
 import { User } from '../users/entities/user.entity';
 import { Otp } from './entities/otp.entity';
-import { LawyerProfile } from '../users/entities/lawyer-profile.entity'; // Import this
+import { LawyerProfile } from '../users/entities/lawyer-profile.entity';
 import { InitSignupDto, VerifyOtpDto, CompleteSignupDto } from './dto/signup.dto';
 import { UserRole } from '../common/enums/role.enum';
 import { AccountStatus } from '../common/enums/account-status.enum';
 import { ClientProfile } from 'src/users/entities/client-profile.entity';
+import { EmailService } from '../email/email.service'; // <-- Import EmailService
 
 @Injectable()
 export class AuthService {
@@ -27,23 +27,8 @@ export class AuthService {
     @InjectRepository(LawyerProfile) private lawyerProfileRepo: Repository<LawyerProfile>, 
     @InjectRepository(ClientProfile) private clientProfileRepo: Repository<ClientProfile>,
     private jwtService: JwtService,
-    private mailerService: MailerService,
+    private emailService: EmailService, // <-- Replace MailerService with EmailService
   ) {}
-
-  async testMail() {
-    try {
-      await this.mailerService.sendMail({
-        to: process.env.MAIL_USER,
-        subject: 'Test OTP Email',
-        text: 'If you received this, email works.',
-      });
-  
-      return { ok: true };
-    } catch (error) {
-      console.error('MAIL ERROR 👉', error);
-      throw error;
-    }
-  }
 
   // 1. Init Signup
   async initSignup(dto: InitSignupDto) {
@@ -65,18 +50,14 @@ export class AuthService {
     
     await this.otpRepo.save(otpEntry);
 
-    // Send Email
+    // Send Email using Resend API
     try {
-      await this.mailerService.sendMail({
-        to: dto.email,
-        subject: 'Verify your AinShongjog Account',
-        template: './otp', 
-        context: { 
-          name: dto.firstName,
-          otp: otpCode,
-          year: new Date().getFullYear(),
-        },
-      });
+      const emailSent = await this.emailService.sendOtpEmail(dto.email, otpCode);
+      
+      if (!emailSent) {
+        await this.otpRepo.delete({ email: dto.email });
+        throw new InternalServerErrorException('Failed to send verification email.');
+      }
     } catch (error) {
       console.error('Email sending failed:', error);
       await this.otpRepo.delete({ email: dto.email });
@@ -138,15 +119,49 @@ export class AuthService {
     if (savedUser.role === UserRole.LAWYER) {
         const profile = this.lawyerProfileRepo.create({ user: savedUser });
         await this.lawyerProfileRepo.save(profile);
+        
+        // Send welcome email to lawyer
+        try {
+          await this.emailService.sendWelcomeEmail(
+            savedUser.email, 
+            `${savedUser.firstName} ${savedUser.lastName}`
+          );
+        } catch (emailError) {
+          console.error('Welcome email failed:', emailError);
+          // Don't throw error, just log it
+        }
     }
 
     if (savedUser.role === UserRole.CLIENT) {
       const profile = this.clientProfileRepo.create({ user: savedUser });
       await this.clientProfileRepo.save(profile);
+      
+      // Send welcome email to client
+      try {
+        await this.emailService.sendWelcomeEmail(
+          savedUser.email, 
+          `${savedUser.firstName} ${savedUser.lastName}`
+        );
+      } catch (emailError) {
+        console.error('Welcome email failed:', emailError);
+        // Don't throw error, just log it
+      }
     }
+    
     await this.otpRepo.delete({ email: dto.email });
 
-    return { message: 'Account created successfully', userId: savedUser.id };
+    return { 
+      message: 'Account created successfully', 
+      userId: savedUser.id,
+      user: {
+        id: savedUser.id,
+        email: savedUser.email,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName,
+        role: savedUser.role,
+        status: savedUser.status
+      }
+    };
   }
 
   // 4. Validate User (Local Strategy)
@@ -165,9 +180,6 @@ export class AuthService {
 
   // 5. Login
   async login(user: any) {
-    // REMOVED: The check that blocked PENDING users. 
-    // Now Pending users can log in to update their profile.
-
     if (user.status === AccountStatus.BLOCKED) {
       throw new UnauthorizedException('Account has been blocked by Admin');
     }
@@ -186,8 +198,83 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        status: user.status // Frontend checks this. If PENDING -> Redirect to Profile Update
+        status: user.status
       },
     };
   }
+
+  // 6. Forgot Password (Optional - you can add later)
+    // 6. Forgot Password
+    async forgotPassword(email: string) {
+      const user = await this.userRepo.findOne({ 
+        where: { email },
+        select: ['id', 'email', 'firstName', 'lastName']
+      });
+      
+      if (!user) {
+        // For security, don't reveal if user exists or not
+        return { message: 'If an account exists, a reset email has been sent' };
+      }
+  
+      const resetToken = this.jwtService.sign(
+        { 
+          sub: user.id, 
+          email: user.email,
+          purpose: 'password-reset' 
+        },
+        { 
+          secret: process.env.RESET_TOKEN_SECRET || 'reset-secret',
+          expiresIn: '15m' 
+        },
+      );
+  
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  
+      // Send reset email using Resend
+      try {
+        const emailSent = await this.emailService.sendPasswordResetEmail(
+          user.email, 
+          resetLink, 
+          user.firstName || 'User'
+        );
+        
+        if (!emailSent) {
+          throw new InternalServerErrorException('Failed to send reset email');
+        }
+        
+        return { 
+          message: 'Password reset email sent successfully',
+          note: 'Check your email for the reset link (valid for 15 minutes)'
+        };
+      } catch (error) {
+        console.error('Password reset email error:', error);
+        throw new InternalServerErrorException('Failed to send reset email');
+      }
+    }
+  
+    // 7. Reset Password (Optional - you can add this later)
+    async resetPassword(token: string, newPassword: string) {
+      try {
+        const payload = this.jwtService.verify(token, {
+          secret: process.env.RESET_TOKEN_SECRET || 'reset-secret'
+        });
+  
+        if (payload.purpose !== 'password-reset') {
+          throw new UnauthorizedException('Invalid token');
+        }
+  
+        const userId = payload.sub;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+        await this.userRepo.update(userId, { password: hashedPassword });
+  
+        return { message: 'Password reset successfully' };
+        
+      } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+          throw new UnauthorizedException('Reset token has expired');
+        }
+        throw new UnauthorizedException('Invalid reset token');
+      }
+    }
 }

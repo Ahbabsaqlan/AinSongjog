@@ -8,11 +8,6 @@ export class AuthController {
   mailerService: any;
   constructor(private authService: AuthService) {}
 
-  @Get('test-mail')
-  testMail() {
-    return this.authService.testMail();
-  }
-
 
   @Post('signup/init')
   initSignup(@Body() dto: InitSignupDto) {
