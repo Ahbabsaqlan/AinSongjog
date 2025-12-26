@@ -9,7 +9,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Get('test-mail')
-  testmail() {
+  testMail() {
     return this.authService.testMail();
   }
 

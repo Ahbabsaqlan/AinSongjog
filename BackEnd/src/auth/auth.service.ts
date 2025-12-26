@@ -31,13 +31,18 @@ export class AuthService {
   ) {}
 
   async testMail() {
+    try {
       await this.mailerService.sendMail({
         to: process.env.MAIL_USER,
         subject: 'Test OTP Email',
         text: 'If you received this, email works.',
       });
   
-    return { ok: true };
+      return { ok: true };
+    } catch (error) {
+      console.error('MAIL ERROR 👉', error);
+      throw error;
+    }
   }
 
   // 1. Init Signup
