@@ -39,6 +39,7 @@ import { ClientProfile } from './users/entities/client-profile.entity';
         entities: [User, Otp, LawyerProfile,ClientProfile, Case, Appointment], 
         
         synchronize: true, // Only for development
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       }),
       inject: [ConfigService],
     }),
