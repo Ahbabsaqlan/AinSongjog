@@ -41,11 +41,22 @@ import { ClientProfile } from './users/entities/client-profile.entity';
         synchronize: false, // Only for development
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
         extra: {
-          ssl: {
-            rejectUnauthorized: false
-          }
+          ssl: process.env.NODE_ENV === 'production' ? { 
+            rejectUnauthorized: false,
+            // Add these to help with connection issues
+            require: true,
+            mode: 'require'
+          } : null,
+          // Force IPv4 to prevent ENETUNREACH error
+          family: 4,
+          // Connection pool settings for production
+          max: 20, // Max connections
+          connectionTimeoutMillis: 5000, // 5 seconds timeout
+          idleTimeoutMillis: 30000, // 30 seconds idle timeout
+          statement_timeout: 60000,
         },
-        family: 4,
+        // Additional TypeORM settings
+        connectTimeoutMS: 10000, // 10 seconds connection timeout
       }),
       inject: [ConfigService],
     }),
