@@ -17,6 +17,20 @@ export class UsersService {
     @InjectRepository(ClientProfile) private clientProfileRepo: Repository<ClientProfile>,
   ) {}
 
+  async findOne(id: string) {
+    const user = await this.userRepo.findOne({
+      where: { id },
+      // IMPORTANT: Load relations so the frontend knows the Bar ID / NID
+      relations: ['lawyerProfile', 'clientProfile'], 
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+  
   async searchActiveLawyers(search: string) {
     const query = this.userRepo.createQueryBuilder('user')
       .leftJoinAndSelect('user.lawyerProfile', 'profile')
@@ -54,4 +68,6 @@ export class UsersService {
 
     return { message: 'Client profile updated successfully' };
   }
+
+
 }

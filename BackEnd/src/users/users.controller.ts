@@ -17,6 +17,13 @@ export class UsersController {
     return this.usersService.searchActiveLawyers(query);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    // req.user.userId comes from the JWT Strategy (decoded from cookie)
+    return this.usersService.findOne(req.user.userId);
+  }
+
   // 2. Lawyer Updates Profile (Protected)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.LAWYER)

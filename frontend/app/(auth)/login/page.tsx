@@ -21,17 +21,17 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginValues) => {
     try {
+      // 1. Call Backend
+      // The backend sets the 'access_token' cookie automatically via Set-Cookie header.
+      // We don't need to (and cannot) touch the token here.
       const res = await api.post("/auth/login", data);
       
-      const { access_token, user } = res.data;
-
-      // 1. Store Token & User Data
-      localStorage.setItem("accessToken", access_token);
-      localStorage.setItem("user", JSON.stringify(user));
+      const { user } = res.data;
 
       toast.success(`Welcome back, ${user.firstName}!`);
 
       // 2. Intelligent Routing based on Role & Status
+      // We don't need to save to localStorage. The Dashboard will verify the cookie.
       if (user.role === "ADMIN") {
         router.push("/dashboard/admin");
       } 

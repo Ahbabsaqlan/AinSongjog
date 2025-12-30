@@ -44,4 +44,32 @@ export class CasesService {
         return this.caseRepo.find({ where: { client: { id: userId } } });
     }
   }
+
+  async findOne(id: string, userId: string) {
+    const caseItem = await this.caseRepo.findOne({
+      where: { id },
+      relations: ['lawyer', 'lawyer.lawyerProfile', 'client', 'client.clientProfile'], // Load ALL details
+    });
+
+    if (!caseItem) throw new NotFoundException('Case not found');
+
+    // Security Check: Is the requester the Lawyer OR the Client?
+    if (caseItem.lawyer.id !== userId && caseItem.client.id !== userId) {
+      throw new ForbiddenException('You do not have access to this case');
+    }
+
+    return caseItem;
+  }
+
+  // 2. UPDATE STATUS (Lawyer Only)
+  async updateStatus(id: string, userId: string, status: string) {
+    const caseItem = await this.findOne(id, userId); // Re-use security check
+
+    if (caseItem.lawyer.id !== userId) {
+      throw new ForbiddenException('Only the assigned lawyer can update status');
+    }
+
+    caseItem.status = status as any;
+    return this.caseRepo.save(caseItem);
+  }
 }
