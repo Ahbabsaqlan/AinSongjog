@@ -106,30 +106,30 @@ export default function SignupPage() {
         {step === 1 && (
           <form onSubmit={formInit.handleSubmit(onInitSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium">First Name</label>
-              <input {...formInit.register("firstName")} className="w-full border p-2 rounded" />
+              <label className="block text-gray-500 text-sm font-medium">First Name</label>
+              <input {...formInit.register("firstName")} className="w-full text-gray-500 border p-2 rounded" />
               {formInit.formState.errors.firstName && <p className="text-red-500 text-sm">{formInit.formState.errors.firstName.message}</p>}
             </div>
             
             <div>
-              <label className="block text-sm font-medium">Last Name</label>
-              <input {...formInit.register("lastName")} className="w-full border p-2 rounded" />
+              <label className="block  text-gray-500 text-sm font-medium">Last Name</label>
+              <input {...formInit.register("lastName")} className="w-full text-gray-500 border p-2 rounded" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Email</label>
-              <input {...formInit.register("email")} type="email" className="w-full border p-2 rounded" />
+              <label className="block text-gray-500 text-sm font-medium">Email</label>
+              <input {...formInit.register("email")} type="email" className="w-full text-gray-500 border p-2 rounded" />
               {formInit.formState.errors.email && <p className="text-red-500 text-sm">{formInit.formState.errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Date of Birth</label>
-              <input {...formInit.register("dob")} type="date" className="w-full border p-2 rounded" />
+              <label className="block text-gray-500 text-sm font-medium">Date of Birth</label>
+              <input {...formInit.register("dob")} type="date" className="w-full text-gray-500 border p-2 rounded" />
             </div>
 
             <div>
-              <label className="block text-sm font-medium">I am a:</label>
-              <select {...formInit.register("role")} className="w-full border p-2 rounded">
+              <label className="block text-gray-500 text-sm font-medium">I am a:</label>
+              <select {...formInit.register("role")} className="w-full  text-gray-500 border p-2 rounded">
                 <option value="CLIENT">Client (Seeking Legal Help)</option>
                 <option value="LAWYER">Lawyer (Providing Service)</option>
               </select>
@@ -148,7 +148,7 @@ export default function SignupPage() {
             
             <div>
               <label className="block text-sm font-medium">OTP Code</label>
-              <input {...formOtp.register("otp")} className="w-full border p-2 rounded text-center text-xl tracking-widest" maxLength={6} />
+              <input {...formOtp.register("otp")} className="w-full text-gray-500 border p-2 rounded text-center text-xl tracking-widest" maxLength={6} />
               {formOtp.formState.errors.otp && <p className="text-red-500 text-sm">{formOtp.formState.errors.otp.message}</p>}
             </div>
 
@@ -163,14 +163,14 @@ export default function SignupPage() {
         {step === 3 && (
           <form onSubmit={formComplete.handleSubmit(onCompleteSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium">Password</label>
-              <input {...formComplete.register("password")} type="password" className="w-full border p-2 rounded" />
+              <label className="block text-gray-500 text-sm font-medium">Password</label>
+              <input {...formComplete.register("password")} type="password" className="w-full text-gray-500 border p-2 rounded" />
               {formComplete.formState.errors.password && <p className="text-red-500 text-sm">{formComplete.formState.errors.password.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Confirm Password</label>
-              <input {...formComplete.register("confirmPassword")} type="password" className="w-full border p-2 rounded" />
+              <label className="block text-gray-500 text-sm font-medium">Confirm Password</label>
+              <input {...formComplete.register("confirmPassword")} type="password" className="w-full text-gray-500 border p-2 rounded" />
               {formComplete.formState.errors.confirmPassword && <p className="text-red-500 text-sm">{formComplete.formState.errors.confirmPassword.message}</p>}
             </div>
 

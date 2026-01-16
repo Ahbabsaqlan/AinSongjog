@@ -21,17 +21,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginValues) => {
     try {
-      // 1. Call Backend
-      // The backend sets the 'access_token' cookie automatically via Set-Cookie header.
-      // We don't need to (and cannot) touch the token here.
       const res = await api.post("/auth/login", data);
       
       const { user } = res.data;
 
       toast.success(`Welcome back, ${user.firstName}!`);
 
-      // 2. Intelligent Routing based on Role & Status
-      // We don't need to save to localStorage. The Dashboard will verify the cookie.
+      
       if (user.role === "ADMIN") {
         router.push("/dashboard/admin");
       } 
@@ -39,7 +35,6 @@ export default function LoginPage() {
         router.push("/dashboard/client");
       } 
       else if (user.role === "LAWYER") {
-        // If Lawyer is PENDING, send them to update profile
         if (user.status === "PENDING") {
           toast.info("Please complete your profile verification.");
           router.push("/dashboard/lawyer/profile");
@@ -73,7 +68,7 @@ export default function LoginPage() {
               {...register("email")}
               type="email"
               placeholder="you@example.com"
-              className="mt-1 w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
+              className="mt-1 w-full text-gray-500 rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
@@ -87,7 +82,7 @@ export default function LoginPage() {
               {...register("password")}
               type="password"
               placeholder="••••••"
-              className="mt-1 w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
+              className="mt-1 w-full text-gray-500 rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>

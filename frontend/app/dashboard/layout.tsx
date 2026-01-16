@@ -5,20 +5,19 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { LogOut, User, FileText, Gavel, ShieldCheck, Search } from "lucide-react";
 import { Toaster, toast } from "sonner";
-import api from "@/lib/axios"; // Ensure you use the updated axios instance withCredentials: true
+import api from "@/lib/axios"; 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   
   const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true); // Tracks if we are checking the cookie
+  const [isLoading, setIsLoading] = useState(true); 
 
   // 1. SESSION RESTORATION LOGIC
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        // We ask the server who we are. The browser sends the cookie automatically.
         const res = await api.get("/users/profile"); 
         setUser(res.data);
       } catch (error) {
@@ -43,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
-  // 3. LOADING SCREEN (Professional Touch)
+  // 3. LOADING SCREEN 
   if (isLoading) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50">
