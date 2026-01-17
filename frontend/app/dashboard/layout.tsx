@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LogOut, User, FileText, Gavel, ShieldCheck, Search } from "lucide-react";
+import { LogOut, User, FileText, Gavel, ShieldCheck, Search, Calendar } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import api from "@/lib/axios"; 
 
@@ -65,12 +65,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (user.role === "LAWYER") {
       return [
         { href: "/dashboard/lawyer/cases", label: "My Cases", icon: Gavel },
+        { href: "/dashboard/lawyer/appointments", label: "Appointments", icon: Calendar },
         { href: "/dashboard/lawyer/profile", label: "Update Profile", icon: User },
       ];
     }
     if (user.role === "CLIENT") {
       return [
         { href: "/dashboard/client", label: "Find Lawyer", icon: Search },
+        { href: "/dashboard/client/appointments", label: "Appointments", icon: Calendar },
         { href: "/dashboard/client/cases", label: "My Cases", icon: FileText },
         { href: "/dashboard/client/profile", label: "My Profile", icon: User },
       ];

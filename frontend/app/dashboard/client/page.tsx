@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { Search, MapPin, Briefcase, Clock, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
+import BookingModal from "@/components/appointments/booking-modal";
 
 // Define the shape of the data we expect from the backend
 interface Lawyer {
@@ -24,6 +25,8 @@ export default function ClientDashboard() {
   const [query, setQuery] = useState("");
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   // Function to fetch lawyers
   const fetchLawyers = async (searchQuery: string = "") => {
@@ -118,7 +121,10 @@ export default function ClientDashboard() {
 
                 {/* Action Button */}
                 <button 
-                  onClick={() => toast.info("Booking feature coming in next module!")}
+                  onClick={() => {
+                    setSelectedLawyer(lawyer);
+                    setIsBookingModalOpen(true);
+                  }}
                   className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-2.5 rounded-lg font-medium hover:bg-slate-800 transition"
                 >
                   <CalendarCheck size={18} />
@@ -128,6 +134,19 @@ export default function ClientDashboard() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Booking Modal */}
+      {selectedLawyer && (
+        <BookingModal
+          lawyerId={selectedLawyer.id}
+          lawyerName={`${selectedLawyer.firstName} ${selectedLawyer.lastName}`}
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedLawyer(null);
+          }}
+        />
       )}
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import api from "@/lib/axios";
 import { toast } from "sonner";
-import { User, MapPin, Phone, CreditCard, Hash, Save, AlertCircle } from "lucide-react";
+import { User, MapPin, Phone, CreditCard, Hash, Save, AlertCircle, Calendar, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 // Receive the server-fetched data as a prop
@@ -11,7 +11,11 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
   const router = useRouter();
   const [caseData, setCaseData] = useState(initialData);
   const [status, setStatus] = useState(initialData.status);
+  const [hearingDate, setHearingDate] = useState(
+    initialData.hearingDate ? new Date(initialData.hearingDate).toISOString().split("T")[0] : ""
+  );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdatingHearingDate, setIsUpdatingHearingDate] = useState(false);
 
   const { client } = caseData;
 
@@ -26,6 +30,27 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleHearingDateUpdate = async () => {
+    setIsUpdatingHearingDate(true);
+    try {
+      await api.patch(`/cases/${caseData.id}/hearing-date`, { 
+        hearingDate: hearingDate || null 
+      });
+      toast.success("Hearing date updated successfully");
+      setCaseData({ ...caseData, hearingDate: hearingDate || null });
+    } catch (error) {
+      toast.error("Failed to update hearing date");
+    } finally {
+      setIsUpdatingHearingDate(false);
+    }
+  };
+
+  const handleDocumentUpload = () => {
+    // Placeholder for document upload - POC level
+    toast.info("Document upload feature - coming soon. For POC, this would open a file picker.");
+    console.log("Document upload clicked for case:", caseData.id);
   };
 
   return (
@@ -108,10 +133,65 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
             </p>
           </div>
 
-          {/* Placeholder for future features */}
-          <div className="bg-gray-50 p-6 rounded-lg border border-dashed border-gray-300 text-center text-gray-500">
-            <AlertCircle className="mx-auto mb-2 text-gray-400" />
-            <p>Document Upload & Hearing Dates coming soon.</p>
+          {/* Hearing Date Section */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+              <Calendar size={20} className="text-blue-600" />
+              Hearing Date
+            </h3>
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={hearingDate}
+                onChange={(e) => setHearingDate(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+              <button
+                onClick={handleHearingDateUpdate}
+                disabled={isUpdatingHearingDate}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition flex items-center gap-2"
+                title="Save Hearing Date"
+              >
+                {isUpdatingHearingDate ? (
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Save size={16} />
+                )}
+              </button>
+            </div>
+            {caseData.hearingDate && (
+              <p className="text-sm text-gray-500 mt-3">
+                Scheduled: {new Date(caseData.hearingDate).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            )}
+          </div>
+
+          {/* Document Upload Section */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+              <Upload size={20} className="text-purple-600" />
+              Documents
+            </h3>
+            <div className="bg-gray-50 p-4 rounded-lg border border-dashed border-gray-300">
+              <p className="text-sm text-gray-600 mb-3">
+                Upload case documents, evidence files, and related materials.
+              </p>
+              <button
+                onClick={handleDocumentUpload}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium flex items-center gap-2"
+              >
+                <Upload size={16} />
+                Upload Document
+              </button>
+              <p className="text-xs text-gray-500 mt-2 italic">
+                Note: Document storage functionality will be implemented in full version.
+              </p>
+            </div>
           </div>
         </div>
       </div>

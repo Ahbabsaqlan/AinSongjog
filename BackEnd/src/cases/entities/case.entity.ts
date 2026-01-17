@@ -21,6 +21,9 @@ export class Case {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'date', nullable: true })
+  hearingDate: Date | null;
+  
   @Column({ type: 'enum', enum: CaseStatus, default: CaseStatus.OPEN })
   status: CaseStatus;
 

@@ -31,4 +31,10 @@ export class CasesController {
   updateStatus(@Param('id') id: string, @Request() req, @Body() body: { status: string }) {
     return this.casesService.updateStatus(id, req.user.userId, body.status);
   }
+
+  @Patch(':id/hearing-date')
+  @Roles(UserRole.LAWYER)
+  updateHearingDate(@Param('id') id: string, @Request() req, @Body() body: { hearingDate: string }) {
+    return this.casesService.updateHearingDate(id, req.user.userId, body.hearingDate);
+  }
 }

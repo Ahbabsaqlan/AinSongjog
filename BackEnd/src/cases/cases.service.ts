@@ -72,4 +72,16 @@ export class CasesService {
     caseItem.status = status as any;
     return this.caseRepo.save(caseItem);
   }
+
+  // 3. UPDATE HEARING DATE (Lawyer Only)
+  async updateHearingDate(id: string, userId: string, hearingDateString: string) {
+    const caseItem = await this.findOne(id, userId); // Re-use security check
+
+    if (caseItem.lawyer.id !== userId) {
+      throw new ForbiddenException('Only the assigned lawyer can update hearing date');
+    }
+
+    caseItem.hearingDate = hearingDateString ? new Date(hearingDateString) : null;
+    return this.caseRepo.save(caseItem);
+  }
 }
