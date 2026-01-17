@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link"; // <--- IMPORT LINK
+import Link from "next/link";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 import { FileText, Gavel, User, Calendar, Clock, ChevronRight } from "lucide-react";
@@ -41,7 +41,8 @@ export default function ClientCasesPage() {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto">
+    // --- MODIFICATION: Added responsive padding ---
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-8 border-b pb-4">
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
@@ -61,7 +62,7 @@ export default function ClientCasesPage() {
         </div>
       ) : cases.length === 0 ? (
         // Empty State
-        <div className="text-center py-16 bg-white rounded-lg border border-dashed border-gray-300">
+        <div className="text-center py-16 px-4 bg-white rounded-lg border border-dashed border-gray-300">
           <Gavel size={48} className="mx-auto text-gray-300 mb-4" />
           <h3 className="text-lg font-medium text-gray-900">No Active Cases</h3>
           <p className="text-gray-500 max-w-sm mx-auto mt-2">
@@ -72,28 +73,30 @@ export default function ClientCasesPage() {
         // Case List
         <div className="grid gap-6">
           {cases.map((c) => (
-            // --- WRAPPED IN LINK ---
             <Link 
               key={c.id} 
-              href={`/dashboard/client/cases/${c.id}`} // Points to dynamic page
+              href={`/dashboard/client/cases/${c.id}`}
               className="block group"
             >
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group-hover:shadow-md group-hover:border-blue-300 transition duration-200">
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
+                <div className="p-4 sm:p-6">
+                  {/* --- MODIFICATION: Stacks on mobile, row on sm+ --- */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                     <div>
                       <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
                         {c.title}
                       </h3>
                       <p className="text-sm text-gray-500 font-mono mt-1">Ref: {c.caseNumber}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
-                      c.status === 'OPEN' ? 'bg-green-100 text-green-700' :
-                      c.status === 'CLOSED' ? 'bg-gray-100 text-gray-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {c.status}
-                    </span>
+                    <div className="shrink-0">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
+                        c.status === 'OPEN' ? 'bg-green-100 text-green-700' :
+                        c.status === 'CLOSED' ? 'bg-gray-100 text-gray-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {c.status}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
@@ -105,8 +108,8 @@ export default function ClientCasesPage() {
                           <User size={18} />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{c.lawyer.firstName} {c.lawyer.lastName}</p>
-                          <p className="text-sm text-gray-500">{c.lawyer.email}</p>
+                          <p className="font-semibold text-gray-900 truncate">{c.lawyer.firstName} {c.lawyer.lastName}</p>
+                          <p className="text-sm text-gray-500 truncate">{c.lawyer.email}</p>
                         </div>
                       </div>
                     </div>
@@ -129,10 +132,11 @@ export default function ClientCasesPage() {
                 </div>
                 
                 {/* Footer / Action */}
-                <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-between items-center group-hover:bg-blue-50 transition-colors">
+                {/* --- MODIFICATION: Stacks and centers on mobile --- */}
+                <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-2 text-center sm:text-left group-hover:bg-blue-50 transition-colors">
                   <span className="text-xs text-gray-500">Secure Digital Vault enabled</span>
                   <span className="text-sm text-blue-600 font-medium flex items-center gap-1">
-                    View Details <ChevronRight size={16} />
+                    View Details <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>
               </div>

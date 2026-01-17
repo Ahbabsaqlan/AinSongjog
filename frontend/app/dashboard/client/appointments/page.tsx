@@ -11,10 +11,9 @@ import {
 export default function ClientAppointments() {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("ALL"); // ALL, PENDING, CONFIRMED
+  const [filter, setFilter] = useState("ALL");
   
-  // Reschedule Modal State
-  const [rescheduleData, setRescheduleData] = useState<any>(null); // If not null, modal is open
+  const [rescheduleData, setRescheduleData] = useState<any>(null);
   const [newDate, setNewDate] = useState("");
 
   const fetchAppointments = async () => {
@@ -29,22 +28,13 @@ export default function ClientAppointments() {
   };
 
   useEffect(() => {
-    fetchAppointments(); // Initial Load
-
-    // LISTEN FOR REAL-TIME UPDATES
-    const handleRefresh = () => {
-      console.log("Realtime Update Received! Refreshing list...");
-      fetchAppointments();
-    };
-
+    fetchAppointments();
+    const handleRefresh = () => fetchAppointments();
     window.addEventListener("refresh-data", handleRefresh);
-
     return () => {
       window.removeEventListener("refresh-data", handleRefresh);
     };
   }, []);
-
-  // --- ACTIONS ---
 
   const handleCancel = async (id: string) => {
     if(!confirm("Are you sure you want to cancel?")) return;
@@ -57,6 +47,7 @@ export default function ClientAppointments() {
 
   const handleRescheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!rescheduleData) return;
     try {
       await api.patch(`/appointments/${rescheduleData.id}/reschedule`, { date: newDate });
       toast.success("Reschedule request sent");
@@ -73,7 +64,6 @@ export default function ClientAppointments() {
     } catch (error) { toast.error("Failed to confirm"); }
   };
 
-  // --- FILTER LOGIC ---
   const filtered = appointments.filter(a => {
     if (filter === "ALL") return a.status !== 'CANCELLED';
     if (filter === "ACTION") return a.status === 'PROPOSED_BY_LAWYER';
@@ -82,22 +72,24 @@ export default function ClientAppointments() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    // --- MODIFICATION: Added responsive padding ---
+    <div className="max-w-5xl mx-auto space-y-8 p-4 sm:p-6 lg:p-8">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-6">
-        <div>
+      {/* --- MODIFICATION: Stacks and centers on mobile --- */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-200 pb-6">
+        <div className="text-center md:text-left">
           <h1 className="text-3xl font-extrabold text-slate-900">My Appointments</h1>
           <p className="text-slate-500 mt-1">Manage consultations and respond to schedule changes.</p>
         </div>
         
         {/* Filter Tabs */}
-        <div className="flex bg-slate-100 p-1 rounded-lg">
+        <div className="flex bg-slate-100 p-1 rounded-lg w-full md:w-auto">
           {['ALL', 'ACTION', 'CONFIRMED'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-md text-sm font-bold transition ${
+              className={`flex-1 md:flex-initial text-center px-4 py-2 rounded-md text-sm font-bold transition ${
                 filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -110,25 +102,25 @@ export default function ClientAppointments() {
       {/* List */}
       <div className="space-y-4">
         {filtered.map((apt) => (
-          <div key={apt.id} className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+          <div key={apt.id} className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-sm hover:shadow-md transition">
             
             {/* Top Row: Lawyer & Status */}
-            <div className="flex flex-col md:flex-row justify-between mb-6">
-              <div className="flex items-start gap-4">
-                <div className="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-xl">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-start mb-6 gap-4">
+              <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4">
+                <div className="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0">
                   {apt.lawyer.firstName[0]}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Consultation with {apt.lawyer.firstName} {apt.lawyer.lastName}</h3>
-                  <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
+                  <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-x-3 text-sm text-slate-500 mt-1">
                     <span className="flex items-center gap-1"><User size={14} /> Lawyer</span>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <span className="flex items-center gap-1"><MapPin size={14} /> {apt.lawyer.lawyerProfile?.chamberAddress || "Online"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 md:mt-0">
+              <div className="shrink-0">
                 <StatusBadge status={apt.status} />
               </div>
             </div>
@@ -136,7 +128,7 @@ export default function ClientAppointments() {
             {/* Middle Row: Date & Context */}
             <div className={`p-4 rounded-lg border ${
               apt.status === 'PROPOSED_BY_LAWYER' ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-100'
-            } mb-6 flex flex-col md:flex-row gap-6 items-center`}>
+            } mb-6 flex flex-col md:flex-row gap-6 items-start md:items-center`}>
               
               <div className="flex items-center gap-3">
                 <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-blue-600">
@@ -144,7 +136,7 @@ export default function ClientAppointments() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Date</p>
-                  <p className="text-slate-900 font-bold">{new Date(apt.scheduleDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  <p className="text-slate-900 font-bold text-sm sm:text-base">{new Date(apt.scheduleDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
               </div>
 
@@ -154,14 +146,13 @@ export default function ClientAppointments() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Time</p>
-                  <p className="text-slate-900 font-bold">{new Date(apt.scheduleDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="text-slate-900 font-bold text-sm sm:text-base">{new Date(apt.scheduleDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
               </div>
 
-              {/* Special Message for Proposal */}
               {apt.status === 'PROPOSED_BY_LAWYER' && (
-                <div className="flex-1 text-right md:pr-4">
-                  <p className="text-sm font-bold text-orange-700 flex items-center justify-end gap-2">
+                <div className="w-full md:w-auto md:flex-1 text-left md:text-right">
+                  <p className="text-sm font-bold text-orange-700 flex items-center justify-start md:justify-end gap-2">
                     <AlertCircle size={16} /> New time proposed by Lawyer
                   </p>
                   <p className="text-xs text-orange-600 mt-1">Please Accept or Reschedule.</p>
@@ -170,36 +161,34 @@ export default function ClientAppointments() {
             </div>
 
             {/* Bottom Row: Actions */}
-            <div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-slate-100">
+            {/* --- MODIFICATION: Stacks on mobile, row on sm+, buttons full-width on mobile --- */}
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center sm:justify-end pt-4 border-t border-slate-100">
               
-              {/* If Lawyer Proposed -> Show Accept Button */}
               {apt.status === 'PROPOSED_BY_LAWYER' && (
                 <button 
                   onClick={() => handleAcceptProposal(apt.id)}
-                  className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-green-700 transition shadow-lg shadow-green-900/10"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-green-700 transition shadow-lg shadow-green-900/10"
                 >
                   <Check size={18} /> Accept New Time
                 </button>
               )}
 
-              {/* Edit Button (Available unless cancelled or confirmed) */}
               {apt.status !== 'CONFIRMED' && apt.status !== 'CANCELLED' && (
                 <button 
                   onClick={() => {
                     setRescheduleData(apt);
                     setNewDate(new Date(apt.scheduleDate).toISOString().slice(0, 16));
                   }}
-                  className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-50 transition"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-50 transition"
                 >
                   <Edit2 size={16} /> {apt.status === 'PROPOSED_BY_LAWYER' ? 'Propose Different Time' : 'Edit Time'}
                 </button>
               )}
 
-              {/* Cancel Button */}
               {apt.status !== 'CANCELLED' && (
                 <button 
                   onClick={() => handleCancel(apt.id)}
-                  className="flex items-center gap-2 text-red-500 px-4 py-2.5 rounded-lg font-bold hover:bg-red-50 transition"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 text-red-500 px-4 py-2.5 rounded-lg font-bold hover:bg-red-50 transition"
                 >
                   <XCircle size={18} /> Cancel
                 </button>
@@ -209,15 +198,18 @@ export default function ClientAppointments() {
           </div>
         ))}
 
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-slate-400 italic">No appointments found.</div>
+        {loading && (
+          <div className="text-center py-16 text-slate-400">Loading appointments...</div>
+        )}
+        {!loading && filtered.length === 0 && (
+          <div className="text-center py-16 text-slate-400 italic">No appointments found for this filter.</div>
         )}
       </div>
 
       {/* RESCHEDULE MODAL */}
       {rescheduleData && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 animate-in zoom-in-95">
             <h3 className="text-xl font-extrabold text-slate-900 mb-2">Reschedule Appointment</h3>
             <p className="text-slate-500 text-sm mb-6">
               Propose a new time. The lawyer will need to review this.
@@ -235,11 +227,11 @@ export default function ClientAppointments() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setRescheduleData(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="button" onClick={() => setRescheduleData(null)} className="w-full sm:w-auto flex-1 order-2 sm:order-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">
+                <button type="submit" className="w-full sm:w-auto flex-1 order-1 sm:order-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">
                   Confirm Change
                 </button>
               </div>

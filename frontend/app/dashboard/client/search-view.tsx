@@ -34,7 +34,6 @@ export default function ClientDashboardSearch() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
-  // Fetch User Info for Welcome Message
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -48,12 +47,12 @@ export default function ClientDashboardSearch() {
       setLawyers(res.data);
     } catch (error) {
       console.error(error);
+      toast.error("Failed to fetch lawyers.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Debounce Search
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchLawyers(query);
@@ -61,7 +60,6 @@ export default function ClientDashboardSearch() {
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
-  // Helper for pills
   const renderSpecialties = (areas: string) => {
     if (!areas) return null;
     return areas.split(',').slice(0, 2).map((tag, i) => (
@@ -72,14 +70,16 @@ export default function ClientDashboardSearch() {
   };
 
   return (
-    <div className="space-y-10 pb-12">
+    // --- MODIFICATION: Added responsive padding ---
+    <div className="space-y-10 p-4 sm:p-6 lg:p-8">
       
-      {/* 1. HERO SECTION (Dashboard Header) */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-8 md:p-12 text-white overflow-hidden shadow-2xl">
+      {/* 1. HERO SECTION */}
+      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-6 md:p-12 text-white overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
-          <div className="max-w-xl">
+        {/* --- MODIFICATION: Stacks on mobile, row on desktop --- */}
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="max-w-xl text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-extrabold mb-3">
               Hello, {user?.firstName || "Client"} 👋
             </h1>
@@ -87,8 +87,8 @@ export default function ClientDashboardSearch() {
               Find the right legal expert for your needs or manage your ongoing cases.
             </p>
             
-            {/* Quick Stats / Actions */}
-            <div className="flex gap-4">
+            {/* --- MODIFICATION: Centered on mobile --- */}
+            <div className="flex justify-center md:justify-start gap-4">
               <Link href="/dashboard/client/cases" className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-3 rounded-xl backdrop-blur-md transition">
                 <FileText size={20} className="text-blue-400" />
                 <span className="font-semibold">My Cases</span>
@@ -100,13 +100,12 @@ export default function ClientDashboardSearch() {
             </div>
           </div>
 
-          {/* Search Box inside Hero */}
           <div className="w-full md:w-[400px] bg-white rounded-xl p-2 shadow-lg self-center">
             <div className="relative flex items-center">
               <Search className="absolute left-3 text-slate-400" size={20} />
               <input
                 type="text"
-                placeholder="Search lawyers by name or area..."
+                placeholder="Search by name or specialty..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-lg text-slate-800 placeholder:text-slate-400 font-medium outline-none bg-transparent"
@@ -116,8 +115,8 @@ export default function ClientDashboardSearch() {
         </div>
       </div>
 
-      {/* 2. CATEGORY FILTERS (Optional - Visual Only for now) */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      {/* 2. CATEGORY FILTERS */}
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 scrollbar-hide">
         {["All", "Criminal Law", "Property Dispute", "Family Law", "Corporate", "High Court"].map((cat) => (
           <button 
             key={cat}
@@ -149,11 +148,11 @@ export default function ClientDashboardSearch() {
             <p className="text-slate-500">Try adjusting your search terms.</p>
           </div>
         ) : (
+          // --- MODIFICATION: Responsive grid columns ---
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {lawyers.map((lawyer) => (
               <div key={lawyer.id} className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full">
                 
-                {/* Card Header */}
                 <div className="p-6 border-b border-slate-50 flex items-start gap-4 bg-slate-50/50">
                   <div className="w-16 h-16 rounded-full border-2 border-white shadow-md bg-white flex items-center justify-center overflow-hidden shrink-0">
                     {lawyer.lawyerProfile?.photoUrl ? (
@@ -176,13 +175,10 @@ export default function ClientDashboardSearch() {
                   </div>
                 </div>
 
-                {/* Card Body */}
                 <div className="p-6 flex-1 flex flex-col gap-4">
-                  {/* Specialties */}
                   <div className="flex flex-wrap gap-2">
                     {renderSpecialties(lawyer.lawyerProfile?.practiceAreas)}
                   </div>
-
                   <div className="space-y-2.5 mt-2">
                     <div className="flex items-start gap-2 text-sm text-slate-600">
                       <MapPin size={16} className="text-slate-400 mt-0.5" />
@@ -195,22 +191,21 @@ export default function ClientDashboardSearch() {
                   </div>
                 </div>
 
-                {/* Card Footer */}
-                <div className="bg-slate-50 p-4 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex flex-col">
+                {/* --- MODIFICATION: Responsive card footer --- */}
+                <div className="bg-slate-50 p-4 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                  <div className="text-center sm:text-left">
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Consultation</span>
-                    <span className="text-lg font-extrabold text-slate-900">
+                    <span className="block text-lg font-extrabold text-slate-900">
                       ৳{lawyer.lawyerProfile?.hourlyRate || "N/A"}
                     </span>
                   </div>
                   
-                  <Link href={`/dashboard/client/lawyers/${lawyer.id}`}>
-                    <button className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 hover:bg-blue-600 hover:shadow-blue-600/20 transition flex items-center gap-2 group/btn">
+                  <Link href={`/dashboard/client/lawyers/${lawyer.id}`} className="w-full sm:w-auto">
+                    <button className="w-full bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 hover:bg-blue-600 hover:shadow-blue-600/20 transition flex items-center justify-center gap-2 group/btn">
                       View Profile <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                     </button>
                   </Link>
                 </div>
-
               </div>
             ))}
           </div>
