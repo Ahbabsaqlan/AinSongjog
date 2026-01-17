@@ -51,7 +51,7 @@ export class CasesController {
   }
 
   @Patch(':id/documents')
-  @Roles(UserRole.LAWYER)
+  @Roles(UserRole.LAWYER,UserRole.CLIENT)
   addDocument(@Param('id') id: string, @Request() req, @Body() body: { url: string }) {
     return this.casesService.addDocument(id, req.user.userId, body.url);
   }

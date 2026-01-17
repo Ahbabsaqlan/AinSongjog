@@ -30,6 +30,23 @@ export class UsersService {
 
     return user;
   }
+
+  // NEW: Get specific user by ID (Public Profile)
+  async getUserById(id: string) {
+    const user = await this.userRepo.findOne({
+      where: { id },
+      // Load both profiles so this endpoint works for checking Clients or Lawyers
+      relations: ['lawyerProfile', 'clientProfile'], 
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Safety: Ensure password is removed (TypeORM usually does this if select: false, but good to be safe)
+    const { password, ...safeUser } = user as any;
+    return safeUser;
+  }
   
   async searchActiveLawyers(search: string) {
     const query = this.userRepo.createQueryBuilder('user')

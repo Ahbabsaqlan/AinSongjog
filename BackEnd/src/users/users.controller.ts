@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Request, Query, ParseUUIDPipe, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateLawyerProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -22,6 +22,11 @@ export class UsersController {
   getProfile(@Request() req) {
     // req.user.userId comes from the JWT Strategy (decoded from cookie)
     return this.usersService.findOne(req.user.userId);
+  }
+  @UseGuards(JwtAuthGuard) // Keep protected so only logged-in users can view details
+  @Get(':id')
+  async getUserById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.getUserById(id);
   }
 
   // 2. Lawyer Updates Profile (Protected)
