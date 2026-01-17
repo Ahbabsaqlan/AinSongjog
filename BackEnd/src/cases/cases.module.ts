@@ -4,11 +4,12 @@ import { CasesController } from './cases.controller';
 import { CasesService } from './cases.service';
 import { Case } from './entities/case.entity';
 import { User } from '../users/entities/user.entity';
+import { CaseEvent } from './entities/case-event.entity';
 
 @Module({
   imports: [
     // Cases need access to Case Table and User Table (to find clients)
-    TypeOrmModule.forFeature([Case, User]) 
+    TypeOrmModule.forFeature([Case, User,CaseEvent]) 
   ],
   controllers: [CasesController],
   providers: [CasesService],

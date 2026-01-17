@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { CaseEvent } from './case-event.entity';
+
 
 export enum CaseStatus {
   OPEN = 'OPEN',
@@ -27,6 +29,9 @@ export class Case {
   @Column({ type: 'enum', enum: CaseStatus, default: CaseStatus.OPEN })
   status: CaseStatus;
 
+  @Column("text", { array: true, default: [] }) 
+  documents: string[];
+  
   // The Lawyer who manages the case
   @ManyToOne(() => User, { eager: true ,cascade: true})
   lawyer: User;
@@ -34,6 +39,9 @@ export class Case {
   // The Client assigned to the case
   @ManyToOne(() => User, { eager: true , cascade: true})
   client: User;
+
+  @OneToMany(() => CaseEvent, (event) => event.case)
+  events: CaseEvent[];
 
   @CreateDateColumn()
   createdAt: Date;

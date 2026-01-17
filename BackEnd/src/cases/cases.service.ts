@@ -5,11 +5,13 @@ import { Case } from './entities/case.entity';
 import { User } from '../users/entities/user.entity';
 import { AccountStatus } from '../common/enums/account-status.enum';
 import { UserRole } from '../common/enums/role.enum';
+import { CaseEvent } from './entities/case-event.entity';
 
 @Injectable()
 export class CasesService {
   constructor(
     @InjectRepository(Case) private caseRepo: Repository<Case>,
+    @InjectRepository(CaseEvent) private eventRepo: Repository<CaseEvent>,
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
@@ -48,7 +50,10 @@ export class CasesService {
   async findOne(id: string, userId: string) {
     const caseItem = await this.caseRepo.findOne({
       where: { id },
-      relations: ['lawyer', 'lawyer.lawyerProfile', 'client', 'client.clientProfile'], // Load ALL details
+      relations: ['lawyer', 'lawyer.lawyerProfile', 'client', 'client.clientProfile','events'], // Load ALL details
+      order: {
+        events: { eventDate: 'ASC' } // Sort events chronologically
+      }
     });
 
     if (!caseItem) throw new NotFoundException('Case not found');
@@ -59,6 +64,58 @@ export class CasesService {
     }
 
     return caseItem;
+  }
+
+  // NEW METHOD: Add Event
+  async addEvent(caseId: string, userId: string, data: any) {
+    const caseItem = await this.findOne(caseId, userId);
+    
+    // Create Event
+    const event = this.eventRepo.create({
+      ...data,
+      case: caseItem,
+      eventDate: new Date(data.eventDate) // Ensure date format
+    });
+
+    return this.eventRepo.save(event);
+  }
+
+  // NEW METHOD: Update Event
+  async updateEvent(eventId: string, userId: string, data: any) {
+    // 1. Find the event and ensure it exists
+    const event = await this.eventRepo.findOne({
+      where: { id: eventId },
+      relations: ['case', 'case.lawyer'], // Need this to check ownership
+    });
+
+    if (!event) throw new NotFoundException('Event not found');
+
+    // 2. Security: Ensure the requester is the Lawyer of this case
+    if (event.case.lawyer.id !== userId) {
+      throw new ForbiddenException('Only the assigned lawyer can edit this event');
+    }
+
+    // 3. Update fields
+    Object.assign(event, {
+      title: data.title,
+      eventDate: new Date(data.eventDate),
+      location: data.location,
+      notes: data.notes,
+      attachments: data.attachments // Full array replace
+    });
+
+    return this.eventRepo.save(event);
+  }
+
+  // NEW METHOD: Add Document to Case
+  async addDocument(caseId: string, userId: string, fileUrl: string) {
+    const caseItem = await this.findOne(caseId, userId);
+    
+    // Initialize array if null
+    if (!caseItem.documents) caseItem.documents = [];
+    
+    caseItem.documents.push(fileUrl);
+    return this.caseRepo.save(caseItem);
   }
 
   // 2. UPDATE STATUS (Lawyer Only)
