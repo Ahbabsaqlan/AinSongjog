@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { 
   LogOut, User, FileText, Gavel, ShieldCheck, Search, Calendar, 
-  Menu, ChevronLeft, ChevronRight, LayoutDashboard 
+  Menu, X, ChevronLeft, ChevronRight, LayoutDashboard 
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import api from "@/lib/axios"; 
@@ -17,7 +17,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true); 
-  const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar State
+  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop Collapsed State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile Menu State
 
   // 1. SESSION RESTORATION LOGIC
   useEffect(() => {
@@ -34,6 +35,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
     restoreSession();
   }, [router]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   // 2. LOGOUT LOGIC
   const handleLogout = async () => {
@@ -71,11 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return [];
   };
 
-  // Helper for Logo Link
-  const getHomeLink = () => {
-    if (!user) return "/";
-    return `/dashboard/${user.role.toLowerCase()}`;
-  };
+  const getHomeLink = () => user ? `/dashboard/${user.role.toLowerCase()}` : "/";
 
   if (isLoading) {
     return (
@@ -93,14 +95,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <RealtimeNotifications userId={user.id} />
       <Toaster position="top-right" />
       
-      {/* SIDEBAR */}
+      {/* --- MOBILE HEADER (Small Screens Only) --- */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900 text-white z-50 flex items-center justify-between px-4 shadow-md">
+        <span className="font-bold text-xl"><span className="text-blue-400">Ain</span>Shongjog</span>
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2">
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </button>
+      </div>
+
+      {/* --- SIDEBAR (Responsive) --- */}
       <aside 
-        className={`bg-slate-900 text-white flex flex-col fixed h-full shadow-xl z-20 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-20" : "w-64"
-        }`}
+        className={`
+          fixed inset-y-0 left-0 z-40 bg-slate-900 text-white shadow-xl transition-all duration-300 ease-in-out flex flex-col
+          ${isMobileMenuOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0"}
+          ${isCollapsed ? "md:w-20" : "md:w-64"}
+          pt-16 md:pt-0 // Push down on mobile to clear header
+        `}
       >
-        {/* Header / Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700">
+        {/* Desktop Header / Toggle */}
+        <div className="hidden md:flex h-16 items-center justify-between px-4 border-b border-slate-700">
           {!isCollapsed ? (
             <Link href={getHomeLink()} className="text-xl font-bold flex items-center gap-2 hover:opacity-80 transition">
               <span className="text-blue-400">Ain</span>Shongjog
@@ -111,13 +124,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition hidden md:block"
+            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition"
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
         
-        {/* Navigation */}
+        {/* Navigation Links */}
         <nav className="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden">
           {getLinks().map((link) => {
             const Icon = link.icon;
@@ -135,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <Icon size={20} className={`shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`} />
                 
-                {!isCollapsed && (
+                {(!isCollapsed || isMobileMenuOpen) && (
                   <span className="font-medium whitespace-nowrap overflow-hidden transition-all duration-300">
                     {link.label}
                   </span>
@@ -145,14 +158,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        {/* Footer / User Profile */}
+        {/* Footer Profile */}
         <div className="p-4 border-t border-slate-700 bg-slate-900">
-          <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
-            <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center shrink-0 text-slate-300 font-bold border border-slate-600">
+          <div className={`flex items-center gap-3 ${isCollapsed && !isMobileMenuOpen ? "justify-center" : ""}`}>
+            <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center shrink-0 text-slate-300 font-bold border border-slate-600 uppercase">
               {user.firstName[0]}
             </div>
             
-            {!isCollapsed && (
+            {(!isCollapsed || isMobileMenuOpen) && (
               <div className="overflow-hidden">
                 <p className="text-sm font-semibold text-white truncate">{user.firstName} {user.lastName}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
@@ -166,21 +179,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button
             onClick={handleLogout}
             className={`mt-4 flex w-full items-center gap-2 rounded-lg bg-red-500/10 py-2.5 text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 text-sm font-medium ${
-              isCollapsed ? "justify-center px-0" : "px-4 justify-start"
+              isCollapsed && !isMobileMenuOpen ? "justify-center px-0" : "px-4 justify-start"
             }`}
             title="Sign Out"
           >
             <LogOut size={18} />
-            {!isCollapsed && "Sign Out"}
+            {(!isCollapsed || isMobileMenuOpen) && "Sign Out"}
           </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* OVERLAY (Mobile) */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* --- MAIN CONTENT AREA --- */}
       <main 
-        className={`flex-1 p-8 overflow-y-auto h-screen transition-all duration-300 ease-in-out ${
-          isCollapsed ? "ml-20" : "ml-64"
-        }`}
+        className={`
+          flex-1 p-4 md:p-8 overflow-y-auto h-screen transition-all duration-300 ease-in-out
+          pt-20 md:pt-8 // Push down content on mobile
+          ${isCollapsed ? "md:ml-20" : "md:ml-64"} // Dynamic margin on desktop
+        `}
       >
         {children}
       </main>

@@ -24,7 +24,6 @@ export default function LawyerProfileForm({ user }: { user: any }) {
       mobileNumber: lawyerProfile?.mobileNumber || "",
       bio: lawyerProfile?.bio || "",
       photoUrl: lawyerProfile?.photoUrl || "",
-      // New Fields
       lawyerType: lawyerProfile?.lawyerType || "",
       currentWorkplace: lawyerProfile?.currentWorkplace || "",
       educationalBackground: lawyerProfile?.educationalBackground || "",
@@ -49,7 +48,6 @@ export default function LawyerProfileForm({ user }: { user: any }) {
     setIsEditing(false);
   };
 
-  // Helper to display practice areas as tags
   const renderTags = (tagsString: string) => {
     if (!tagsString) return <span className="text-gray-400 italic">No practice areas listed.</span>;
     return tagsString.split(',').map((tag, idx) => (
@@ -60,11 +58,12 @@ export default function LawyerProfileForm({ user }: { user: any }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    // --- MODIFICATION: Added padding to the main container for all screen sizes ---
+    <div className="max-w-6xl mx-auto space-y-6 px-4 sm:px-6 lg:px-8 py-6">
       
       {/* 1. Header Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="h-23 mb-5 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative">
+        <div className="h-28 sm:h-22 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative">
           <div className="absolute top-4 right-4">
              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 backdrop-blur-sm">
                 <ShieldCheckIcon /> Verified Practitioner
@@ -72,12 +71,16 @@ export default function LawyerProfileForm({ user }: { user: any }) {
           </div>
         </div>
 
-        <div className="px-8 pb-8">
-          <div className="relative flex flex-col md:flex-row justify-between items-end -mt-14 mb-6">
-            <div className="flex items-end gap-6">
+        {/* --- MODIFICATION: Added responsive padding --- */}
+        <div className="px-4 sm:px-8 sm:py-12 pb-8">
+          <div className="relative flex flex-col md:flex-row justify-between md:items-end -mt-16 sm:-mt-20">
+            
+            <div className="w-full flex flex-col md:flex-row items-center md:items-end gap-4">
+              
               {/* Avatar */}
-              <div className="relative">
-                <div className="w-32 h-32 rounded-xl border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-md">
+              <div className="relative shrink-0">
+                 {/* --- MODIFICATION: Responsive avatar size --- */}
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-md">
                   {lawyerProfile?.photoUrl ? (
                     <img src={lawyerProfile.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -87,13 +90,13 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               </div>
 
               {/* Name & Type */}
-              <div className="mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{user.firstName} {user.lastName}</h1>
-                <div className="flex flex-wrap items-center gap-2 mt-1">
-                  <span className="text-lg text-blue-700 font-semibold">
+              <div className="text-center md:text-left md:mb-2 mt-2 md:mt-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{user.firstName} {user.lastName}</h1>
+                <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center md:justify-start gap-x-2 mt-1">
+                  <span className="text-base sm:text-lg text-blue-700 font-semibold">
                     {lawyerProfile?.lawyerType || "Legal Professional"}
                   </span>
-                  <span className="text-gray-300">|</span>
+                  <span className="hidden sm:inline text-gray-300">|</span>
                   <div className="flex items-center gap-1 text-gray-600 text-sm">
                     <Mail size={14} /> {user.email}
                   </div>
@@ -102,20 +105,20 @@ export default function LawyerProfileForm({ user }: { user: any }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="mt-4 md:mt-0">
+            <div className="w-full md:w-auto mt-6 md:mt-0 shrink-0">
               {!isEditing ? (
                 <button 
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm"
+                  className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm"
                 >
                   <Edit2 size={16} /> Edit Profile
                 </button>
               ) : (
                 <div className="flex gap-2">
-                  <button onClick={handleCancel} disabled={isSubmitting} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
+                  <button onClick={handleCancel} disabled={isSubmitting} className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
                     <X size={16} /> Cancel
                   </button>
-                  <button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">
+                  <button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">
                     {isSubmitting ? "Saving..." : <><Save size={16} /> Save Changes</>}
                   </button>
                 </div>
@@ -127,11 +130,11 @@ export default function LawyerProfileForm({ user }: { user: any }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Column: Bio, Education, Practice Areas */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Practice Areas */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          {/* --- MODIFICATION: Responsive padding for cards --- */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
             <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
               <Gavel size={20} className="text-blue-600" />
               Areas of Practice
@@ -146,19 +149,19 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 />
               </div>
             ) : (
-              <div className="flex flex-wrap">
+              <div className="flex flex-wrap pt-2">
                 {renderTags(lawyerProfile?.practiceAreas)}
               </div>
             )}
           </div>
 
           {/* Education & Bio */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+           {/* --- MODIFICATION: Responsive padding for cards --- */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
             <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
               <Briefcase size={20} className="text-blue-600" />
               Professional Background
             </h3>
-
             {isEditing ? (
               <div className="space-y-6">
                 <div>
@@ -176,11 +179,11 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                   <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <GraduationCap size={16} /> Education
                   </h4>
-                  <p className="text-gray-800 font-medium">{lawyerProfile?.educationalBackground || "Not listed"}</p>
+                  <p className="text-gray-800 font-medium break-words">{lawyerProfile?.educationalBackground || "Not listed"}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">About</h4>
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-wrap break-words">
                     {lawyerProfile?.bio || "No bio added yet."}
                   </p>
                 </div>
@@ -191,11 +194,10 @@ export default function LawyerProfileForm({ user }: { user: any }) {
 
         {/* Right Column: Key Details Sidebar */}
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-6">At a Glance</h3>
             
             <div className="space-y-6">
-              {/* Photo Upload (Only in Edit) */}
               {isEditing && (
                 <div className="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Change Photo</label>
@@ -207,7 +209,6 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 </div>
               )}
 
-              {/* Lawyer Type */}
               {isEditing && (
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">Professional Title</label>
@@ -220,8 +221,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                   </select>
                 </div>
               )}
-
-              {/* Workplace */}
+              
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Current Workplace</label>
                 {isEditing ? (
@@ -229,12 +229,11 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 ) : (
                   <div className="flex items-center gap-3 text-gray-900">
                     <Building size={18} className="text-gray-400" />
-                    <span>{lawyerProfile?.currentWorkplace || "Not listed"}</span>
+                    <span className="break-words">{lawyerProfile?.currentWorkplace || "Not listed"}</span>
                   </div>
                 )}
               </div>
-
-              {/* Rate */}
+              
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Hourly Rate</label>
                 {isEditing ? (
@@ -246,8 +245,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                   </div>
                 )}
               </div>
-
-              {/* Bar ID */}
+              
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Bar Council ID</label>
                 {isEditing ? (
@@ -255,12 +253,11 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 ) : (
                   <div className="flex items-center gap-3 text-gray-900 bg-gray-50 p-2 rounded border border-gray-100">
                     <Scale size={16} className="text-gray-500" />
-                    <span className="font-mono text-sm">{lawyerProfile?.barCouncilId || "Pending"}</span>
+                    <span className="font-mono text-sm break-all">{lawyerProfile?.barCouncilId || "Pending"}</span>
                   </div>
                 )}
               </div>
 
-              {/* Address */}
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Chamber</label>
                 {isEditing ? (
@@ -268,12 +265,11 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 ) : (
                   <div className="flex items-start gap-3 text-gray-900 text-sm">
                     <MapPin size={18} className="text-gray-400 mt-0.5 shrink-0" />
-                    {lawyerProfile?.chamberAddress || "Not listed"}
+                    <span className="break-words">{lawyerProfile?.chamberAddress || "Not listed"}</span>
                   </div>
                 )}
               </div>
-
-              {/* Mobile */}
+              
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Contact</label>
                 {isEditing ? (
@@ -281,7 +277,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 ) : (
                   <div className="flex items-center gap-3 text-gray-900">
                     <Phone size={18} className="text-gray-400" />
-                    {lawyerProfile?.mobileNumber || "Not listed"}
+                    <span className="break-words">{lawyerProfile?.mobileNumber || "Not listed"}</span>
                   </div>
                 )}
               </div>

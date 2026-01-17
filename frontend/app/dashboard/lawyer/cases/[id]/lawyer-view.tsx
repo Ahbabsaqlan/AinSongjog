@@ -36,10 +36,8 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
   const [editingEvent, setEditingEvent] = useState<any>(null); 
 
   // --- DATA PROCESSING ---
-  // Sort events: Newest date first for logic, but we might render differently
   const events = (caseData.events || []).sort((a: any, b: any) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
   
-  // Combine General Docs + Event Docs into one "Vault" view
   const generalDocs = (caseData.documents || []).map((url: string) => ({ url, type: 'General Case File', date: caseData.updatedAt }));
   const eventDocs = events.flatMap((e: any) => (e.attachments || []).map((url: string) => ({ url, type: e.title, date: e.eventDate })));
   const allDocuments = [...generalDocs, ...eventDocs];
@@ -94,23 +92,26 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
   const { client } = caseData;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-12">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 pb-12 px-4 md:px-0">
       
       {/* HEADER */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <span className="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded border border-slate-200">
+        <div className="w-full md:w-auto">
+          <span className="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded border border-slate-200 inline-block mb-2">
             REF: {caseData.caseNumber}
           </span>
-          <h1 className="text-3xl font-extrabold text-slate-900 mt-2">{caseData.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 break-words leading-tight">
+            {caseData.title}
+          </h1>
         </div>
-        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
-          <div className={`w-3 h-3 rounded-full ml-2 ${status === 'OPEN' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-slate-400'}`} />
+        
+        <div className="w-full md:w-auto flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div className={`w-3 h-3 rounded-full ml-2 shrink-0 ${status === 'OPEN' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-slate-400'}`} />
           <select 
             value={status} 
             onChange={(e) => handleStatusUpdate(e.target.value)}
             disabled={isUpdatingStatus}
-            className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer pr-2"
+            className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer w-full md:w-auto pr-2"
           >
             <option value="OPEN">ACTIVE CASE</option>
             <option value="PENDING">PENDING REVIEW</option>
@@ -119,10 +120,11 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         
         {/* --- LEFT SIDEBAR (Client & Docs) --- */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6 order-2 lg:order-1">
           
           {/* CLIENT CARD */}
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -136,20 +138,22 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                </div>
             </div>
             <div className="pt-12 px-6 pb-6">
-              <h3 className="text-xl font-bold text-slate-900">{client.firstName} {client.lastName}</h3>
-              <p className="text-sm font-medium text-slate-500 mb-6 bg-slate-50 inline-block px-2 rounded">{client.email}</p>
+              <h3 className="text-xl font-bold text-slate-900 truncate">{client.firstName} {client.lastName}</h3>
+              <p className="text-sm font-medium text-slate-500 mb-6 bg-slate-50 inline-block px-2 rounded truncate max-w-full">
+                {client.email}
+              </p>
               
               <div className="space-y-4 text-sm">
                 <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
-                  <div className="bg-blue-50 p-2 rounded-lg text-blue-600"><Phone size={18} /></div>
-                  <div>
+                  <div className="bg-blue-50 p-2 rounded-lg text-blue-600 shrink-0"><Phone size={18} /></div>
+                  <div className="min-w-0">
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Mobile</p>
-                    <p className="text-sm font-bold text-slate-800">{client.clientProfile?.mobileNumber || "N/A"}</p>
+                    <p className="text-sm font-bold text-slate-800 truncate">{client.clientProfile?.mobileNumber || "N/A"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-100 shadow-sm">
-                  <div className="bg-red-50 p-2 rounded-lg text-red-500"><MapPin size={18} /></div>
-                  <div>
+                  <div className="bg-red-50 p-2 rounded-lg text-red-500 shrink-0"><MapPin size={18} /></div>
+                  <div className="min-w-0">
                     <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Address</p>
                     <p className="text-sm font-bold text-slate-800 line-clamp-1">{client.clientProfile?.address || "N/A"}</p>
                   </div>
@@ -183,7 +187,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                     target="_blank" 
                     className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:bg-purple-50 hover:border-purple-200 transition group"
                   >
-                    <div className="p-2 bg-white rounded-md border border-slate-200 shadow-sm">
+                    <div className="p-2 bg-white rounded-md border border-slate-200 shadow-sm shrink-0">
                       {getFileIcon(doc.url)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -194,7 +198,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                         {doc.type} • {new Date(doc.date).toLocaleDateString()}
                       </p>
                     </div>
-                    <Download size={14} className="text-slate-300 group-hover:text-purple-600" />
+                    <Download size={14} className="text-slate-300 group-hover:text-purple-600 shrink-0" />
                   </a>
                 ))
               ) : (
@@ -207,15 +211,15 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
         </div>
 
         {/* --- RIGHT SIDEBAR (Timeline) --- */}
-        <div className="lg:col-span-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <div className="flex justify-between items-center mb-8">
+        <div className="lg:col-span-8 order-1 lg:order-2">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <Clock size={24} className="text-blue-600" /> Case Timeline
               </h3>
               <button 
                 onClick={openAddModal} 
-                className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl hover:bg-slate-800 text-sm font-bold transition shadow-lg shadow-slate-900/10"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl hover:bg-slate-800 text-sm font-bold transition shadow-lg shadow-slate-900/10"
               >
                 <Plus size={18} /> Add Event
               </button>
@@ -232,14 +236,14 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                     <div className={`absolute -left-[9px] top-0 w-5 h-5 rounded-full border-4 border-white shadow-sm ${isUpcoming ? 'bg-blue-600 animate-pulse ring-4 ring-blue-50' : 'bg-slate-300'}`} />
                     
                     {/* Event Card */}
-                    <div className={`rounded-xl border p-6 transition ${isUpcoming ? 'bg-blue-50/30 border-blue-200 shadow-sm' : 'bg-white border-slate-200 hover:border-blue-200'}`}>
-                      <div className="flex justify-between items-start mb-3">
+                    <div className={`rounded-xl border p-5 md:p-6 transition ${isUpcoming ? 'bg-blue-50/30 border-blue-200 shadow-sm' : 'bg-white border-slate-200 hover:border-blue-200'}`}>
+                      <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
                         <div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 flex-wrap">
                             <h4 className={`font-bold text-lg ${isUpcoming ? 'text-blue-900' : 'text-slate-800'}`}>{event.title}</h4>
                             {isUpcoming && <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wide shadow-sm">UPCOMING</span>}
                           </div>
-                          <div className="flex items-center gap-4 text-sm font-medium text-slate-500 mt-2">
+                          <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-slate-500 mt-2">
                             <span className="flex items-center gap-1.5"><Calendar size={15} className="text-blue-500" /> {new Date(event.eventDate).toLocaleDateString()}</span>
                             <span className="flex items-center gap-1.5"><Clock size={15} className="text-blue-500" /> {new Date(event.eventDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                           </div>
@@ -247,20 +251,20 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                         
                         <button 
                           onClick={() => openEditModal(event)}
-                          className="p-2 bg-white rounded-lg border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition shadow-sm"
+                          className="self-end sm:self-start p-2 bg-white rounded-lg border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 transition shadow-sm"
                         >
                           <Edit2 size={16} />
                         </button>
                       </div>
 
                       <div className="space-y-4">
-                        <div className="flex gap-2 items-start text-sm text-slate-700 bg-white p-2.5 rounded-lg border border-slate-100 w-fit shadow-sm">
-                          <Map size={16} className="mt-0.5 text-orange-500" />
-                          <span className="font-semibold">{event.location}</span>
+                        <div className="flex gap-2 items-start text-sm text-slate-700 bg-white p-2.5 rounded-lg border border-slate-100 w-full sm:w-fit shadow-sm">
+                          <Map size={16} className="mt-0.5 text-orange-500 shrink-0" />
+                          <span className="font-semibold break-words">{event.location}</span>
                         </div>
                         
                         {event.notes && (
-                          <p className="text-sm text-slate-600 leading-relaxed pl-1">
+                          <p className="text-sm text-slate-600 italic leading-relaxed pl-1 break-words">
                             "{event.notes}"
                           </p>
                         )}
@@ -273,7 +277,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                             </p>
                             <div className="flex flex-wrap gap-3">
                               {event.attachments.map((url: string, idx: number) => (
-                                <a key={idx} href={url} target="_blank" className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-white hover:border-blue-400 hover:text-blue-700 transition">
+                                <a key={idx} href={url} target="_blank" className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-white hover:border-blue-400 hover:text-blue-700 transition max-w-full">
                                   {getFileIcon(url)}
                                   <span className="truncate max-w-[150px]">{getFileName(url)}</span>
                                 </a>
@@ -283,7 +287,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                         )}
 
                         <div className="pt-2 text-[10px] text-slate-400 flex items-center gap-1 justify-end">
-                          <RefreshCw size={10} /> Last updated: {new Date(event.updatedAt || event.createdAt).toLocaleDateString()}
+                          <RefreshCw size={10} /> Updated: {new Date(event.updatedAt || event.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -375,7 +379,7 @@ function EventModal({ caseId, existingEvent, onClose, onSuccess }: any) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         
         {/* Modal Header */}
-        <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+        <div className="px-6 md:px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
           <h3 className="font-extrabold text-xl text-slate-900">
             {isEditMode ? "Edit Timeline Event" : "Add Timeline Event"}
           </h3>
@@ -384,10 +388,10 @@ function EventModal({ caseId, existingEvent, onClose, onSuccess }: any) {
           </button>
         </div>
         
-        <div className="overflow-y-auto p-8 bg-white">
+        <div className="overflow-y-auto p-6 md:p-8 bg-white">
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Event Type</label>
                 <select 
@@ -442,7 +446,7 @@ function EventModal({ caseId, existingEvent, onClose, onSuccess }: any) {
               <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300">
                 <FileUpload 
                   variant="document"
-                  accept="*" // Allow any file type here (handled by backend 50MB limit)
+                  accept="*" 
                   onUploadComplete={(url) => setAttachments(prev => [...prev, url])} 
                 />
 
@@ -451,7 +455,7 @@ function EventModal({ caseId, existingEvent, onClose, onSuccess }: any) {
                   <div className="mt-4 space-y-2">
                     {attachments.map((url, i) => (
                       <div key={i} className="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 text-sm shadow-sm">
-                        <span className="flex items-center gap-3 font-semibold text-slate-700 truncate max-w-[280px]">
+                        <span className="flex items-center gap-3 font-semibold text-slate-700 truncate max-w-[200px]">
                           {getFileIcon(url)} {getFileName(url)}
                         </span>
                         <button type="button" onClick={() => setAttachments(prev => prev.filter(u => u !== url))} className="text-slate-400 hover:text-red-600 transition p-1 hover:bg-red-50 rounded">
