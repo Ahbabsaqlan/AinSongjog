@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true); 
-  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop Collapsed State
+  const [isCollapsed, setIsCollapsed] = useState(true); // Desktop Collapsed State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile Menu State
 
   // 1. SESSION RESTORATION LOGIC
