@@ -18,6 +18,7 @@ import { Case } from './cases/entities/case.entity';
 import { Appointment } from './appointments/entities/appointment.entity';
 import { ClientProfile } from './users/entities/client-profile.entity';
 import { StorageModule } from './storage/storage.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -62,7 +63,8 @@ import { StorageModule } from './storage/storage.module';
     CasesModule,
     AppointmentsModule,
     EmailModule,
-    StorageModule, // <-- Add EmailModule here
+    StorageModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

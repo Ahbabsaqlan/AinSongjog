@@ -36,12 +36,24 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
   const [editingEvent, setEditingEvent] = useState<any>(null); 
 
   // --- DATA PROCESSING ---
+  // Sort events: Newest date first for logic, but we might render differently
   const events = (caseData.events || []).sort((a: any, b: any) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
   
-  // Combine General Docs + Event Docs
+  // Combine General Docs + Event Docs into one "Vault" view
   const generalDocs = (caseData.documents || []).map((url: string) => ({ url, type: 'General Case File', date: caseData.updatedAt }));
   const eventDocs = events.flatMap((e: any) => (e.attachments || []).map((url: string) => ({ url, type: e.title, date: e.eventDate })));
   const allDocuments = [...generalDocs, ...eventDocs];
+
+  // Refresh Logic
+  const refreshData = async () => {
+    try {
+      const res = await api.get(`/cases/${initialData.id}`);
+      setCaseData(res.data);
+      router.refresh();
+    } catch (e) {
+      console.error("Refresh failed");
+    }
+  };
 
   const handleStatusUpdate = async (newStatus: string) => {
     setStatus(newStatus);
@@ -63,7 +75,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
       await api.patch(`/cases/${caseData.id}/documents`, { url });
       toast.success("Document added to vault");
       setDocModalOpen(false);
-      router.refresh();
+      refreshData();
     } catch (error) {
       toast.error("Failed to save document");
     }
@@ -261,7 +273,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
                             </p>
                             <div className="flex flex-wrap gap-3">
                               {event.attachments.map((url: string, idx: number) => (
-                                <a key={idx} href={url} target="_blank" className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg text-xs font-bold text-slate-700 hover:bg-white hover:border-blue-400 hover:text-blue-700 hover:shadow-sm transition">
+                                <a key={idx} href={url} target="_blank" className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-white hover:border-blue-400 hover:text-blue-700 transition">
                                   {getFileIcon(url)}
                                   <span className="truncate max-w-[150px]">{getFileName(url)}</span>
                                 </a>
@@ -289,7 +301,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
           caseId={caseData.id} 
           existingEvent={editingEvent}
           onClose={() => setModalOpen(false)} 
-          onSuccess={() => { setModalOpen(false); router.refresh(); }} 
+          onSuccess={() => { setModalOpen(false); refreshData(); }} 
         />
       )}
 
@@ -304,7 +316,7 @@ export default function LawyerCaseView({ initialData }: { initialData: any }) {
             
             <FileUpload 
               variant="document"
-              accept="*" // Any file type for general docs
+              accept="*" 
               onUploadComplete={handleGeneralDocUpload}
             />
             

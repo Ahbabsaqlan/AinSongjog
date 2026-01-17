@@ -8,6 +8,7 @@ import { UserRole } from '../common/enums/role.enum';
 import { UpdateLawyerProfileDto } from './dto/update-profile.dto';
 import { ClientProfile } from './entities/client-profile.entity';
 import { UpdateClientProfileDto } from './dto/update-client-profile.dto';
+import { Brackets } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -49,15 +50,25 @@ export class UsersService {
   }
   
   async searchActiveLawyers(search: string) {
-    const query = this.userRepo.createQueryBuilder('user')
-      .leftJoinAndSelect('user.lawyerProfile', 'profile')
+    const queryBuilder = this.userRepo.createQueryBuilder('user')
+      .leftJoinAndSelect('user.lawyerProfile', 'profile') // Join the profile
       .where('user.role = :role', { role: UserRole.LAWYER })
-      .andWhere('user.status = :status', { status: AccountStatus.ACTIVE }); // Only ACTIVE
+      .andWhere('user.status = :status', { status: AccountStatus.ACTIVE });
 
     if (search) {
-      query.andWhere('(user.firstName ILIKE :s OR user.lastName ILIKE :s OR profile.chamberAddress ILIKE :s)', { s: `%${search}%` });
+      // Use Brackets to wrap OR conditions correctly
+      queryBuilder.andWhere(new Brackets(qb => {
+        qb.where('user.firstName ILIKE :search', { search: `%${search}%` })
+          .orWhere('user.lastName ILIKE :search', { search: `%${search}%` })
+          // SEARCH LOCATION (Chamber Address, Workplace)
+          .orWhere('profile.chamberAddress ILIKE :search', { search: `%${search}%` })
+          .orWhere('profile.currentWorkplace ILIKE :search', { search: `%${search}%` })
+          // SEARCH EXPERTISE (Practice Areas)
+          .orWhere('profile.practiceAreas ILIKE :search', { search: `%${search}%` });
+      }));
     }
-    return query.getMany();
+
+    return queryBuilder.getMany();
   }
 
   async updateLawyerProfile(userId: string, dto: UpdateLawyerProfileDto) {

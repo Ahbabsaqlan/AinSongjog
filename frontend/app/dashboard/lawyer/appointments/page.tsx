@@ -3,39 +3,25 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { toast } from "sonner";
-import { Calendar, Clock, User, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { 
+  Calendar, Clock, User, MapPin, AlertCircle, 
+  CheckCircle2, XCircle, Edit2, Check, Hourglass
+} from "lucide-react";
 
-interface Appointment {
-  id: string;
-  scheduleDate: string;
-  status: "PENDING" | "CONFIRMED" | "REJECTED" | "CANCELLED";
-  createdAt: string;
-  client: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    clientProfile?: {
-      mobileNumber?: string;
-      address?: string;
-    };
-  };
-}
-
-export default function LawyerAppointmentsPage() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+export default function LawyerAppointments() {
+  const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [filter, setFilter] = useState("ALL"); 
+  
+  // Reschedule Modal State
+  const [rescheduleData, setRescheduleData] = useState<any>(null);
+  const [newDate, setNewDate] = useState("");
 
   const fetchAppointments = async () => {
     try {
-      const url = statusFilter
-        ? `/appointments?status=${statusFilter}`
-        : "/appointments";
-      const res = await api.get(url);
+      const res = await api.get("/appointments");
       setAppointments(res.data);
     } catch (error) {
-      console.error(error);
       toast.error("Failed to load appointments");
     } finally {
       setLoading(false);
@@ -44,235 +30,254 @@ export default function LawyerAppointmentsPage() {
 
   useEffect(() => {
     fetchAppointments();
-  }, [statusFilter]);
 
-  const handleStatusUpdate = async (appointmentId: string, status: "CONFIRMED" | "REJECTED") => {
+    // Listen for Pusher events triggered by the notification component
+    const handleRefresh = () => fetchAppointments();
+    window.addEventListener("refresh-data", handleRefresh);
+
+    return () => window.removeEventListener("refresh-data", handleRefresh);
+  }, []);
+
+  // --- ACTIONS ---
+
+  const handleConfirm = async (id: string) => {
     try {
-      await api.patch(`/appointments/${appointmentId}/status`, { status });
-      toast.success(`Appointment ${status.toLowerCase()} successfully`);
-      fetchAppointments(); // Refresh list
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.response?.data?.message || `Failed to ${status.toLowerCase()} appointment`);
-    }
+      await api.patch(`/appointments/${id}/confirm`);
+      toast.success("Appointment Confirmed!");
+      fetchAppointments();
+    } catch (error) { toast.error("Failed to confirm"); }
   };
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      PENDING: "bg-yellow-100 text-yellow-700 border-yellow-300",
-      CONFIRMED: "bg-green-100 text-green-700 border-green-300",
-      REJECTED: "bg-red-100 text-red-700 border-red-300",
-      CANCELLED: "bg-gray-100 text-gray-700 border-gray-300",
-    };
-
-    const icons = {
-      PENDING: <Clock size={14} />,
-      CONFIRMED: <CheckCircle size={14} />,
-      REJECTED: <XCircle size={14} />,
-      CANCELLED: <XCircle size={14} />,
-    };
-
-    return (
-      <span
-        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-          styles[status as keyof typeof styles] || styles.PENDING
-        }`}
-      >
-        {icons[status as keyof typeof icons]}
-        {status}
-      </span>
-    );
+  const handleCancel = async (id: string) => {
+    if(!confirm("Are you sure you want to decline this appointment?")) return;
+    try {
+      await api.patch(`/appointments/${id}/cancel`);
+      toast.success("Appointment cancelled");
+      fetchAppointments();
+    } catch (error) { toast.error("Failed to cancel"); }
   };
 
-  const canManage = (status: string) => {
-    return status === "PENDING";
+  const handleRescheduleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // This sets status to PROPOSED_BY_LAWYER
+      await api.patch(`/appointments/${rescheduleData.id}/reschedule`, { date: newDate });
+      toast.success("New time proposed to client");
+      setRescheduleData(null);
+      fetchAppointments();
+    } catch (error) { toast.error("Failed to reschedule"); }
   };
+
+  // --- FILTER LOGIC ---
+  const filtered = appointments.filter(a => {
+    if (filter === "ALL") return a.status !== 'CANCELLED';
+    if (filter === "PENDING") return a.status === 'PENDING'; // Needs my attention
+    if (filter === "CONFIRMED") return a.status === 'CONFIRMED';
+    return true;
+  });
+
+  if (loading) return <div className="p-8 text-center">Loading schedule...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto space-y-8 pb-10">
+      
       {/* Header */}
-      <div className="mb-8 border-b pb-4">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <Calendar className="text-blue-600" />
-          My Appointments
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Review and manage appointment requests from clients.
-        </p>
-      </div>
-
-      {/* Filter */}
-      <div className="mb-6 flex gap-2">
-        <button
-          onClick={() => setStatusFilter("")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            statusFilter === ""
-              ? "bg-slate-900 text-white"
-              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setStatusFilter("PENDING")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            statusFilter === "PENDING"
-              ? "bg-yellow-600 text-white"
-              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          Pending
-        </button>
-        <button
-          onClick={() => setStatusFilter("CONFIRMED")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            statusFilter === "CONFIRMED"
-              ? "bg-green-600 text-white"
-              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          Confirmed
-        </button>
-        <button
-          onClick={() => setStatusFilter("REJECTED")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-            statusFilter === "REJECTED"
-              ? "bg-red-600 text-white"
-              : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          Rejected
-        </button>
-      </div>
-
-      {/* Loading State */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-          <p>Loading appointments...</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-6">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900">Client Appointments</h1>
+          <p className="text-slate-500 mt-1">Manage consultation requests and your schedule.</p>
         </div>
-      ) : appointments.length === 0 ? (
-        // Empty State
-        <div className="text-center py-16 bg-white rounded-lg border border-dashed border-gray-300">
-          <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900">No Appointments Found</h3>
-          <p className="text-gray-500 max-w-sm mx-auto mt-2">
-            {statusFilter
-              ? `You don't have any ${statusFilter.toLowerCase()} appointments.`
-              : "You don't have any appointment requests yet."}
-          </p>
-        </div>
-      ) : (
-        // Appointment List
-        <div className="grid gap-6">
-          {appointments.map((apt) => (
-            <div
-              key={apt.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
+        
+        {/* Filter Tabs */}
+        <div className="flex bg-slate-100 p-1 rounded-lg">
+          {['ALL', 'PENDING', 'CONFIRMED'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-md text-sm font-bold transition ${
+                filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
             >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">
-                      Appointment Request from {apt.client.firstName} {apt.client.lastName}
-                    </h3>
-                    <p className="text-sm text-gray-500">Client Email: {apt.client.email}</p>
-                  </div>
-                  {getStatusBadge(apt.status)}
+              {f === 'PENDING' ? 'New Requests' : f.charAt(0) + f.slice(1).toLowerCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="space-y-4">
+        {filtered.map((apt) => (
+          <div key={apt.id} className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+            
+            {/* Top Row: Client Info & Status */}
+            <div className="flex flex-col md:flex-row justify-between mb-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
+                  {apt.client.clientProfile?.photoUrl ? (
+                    <img src={apt.client.clientProfile.photoUrl} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={24} className="text-slate-400" />
+                  )}
                 </div>
-
-                <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
-                  {/* Client Info */}
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold mb-2">
-                      Client Details
-                    </p>
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <User size={16} className="text-blue-500" />
-                        <span>
-                          {apt.client.firstName} {apt.client.lastName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400">Email:</span>
-                        <span>{apt.client.email}</span>
-                      </div>
-                      {apt.client.clientProfile?.mobileNumber && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-400">Phone:</span>
-                          <span>{apt.client.clientProfile.mobileNumber}</span>
-                        </div>
-                      )}
-                      {apt.client.clientProfile?.address && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-gray-400">Address:</span>
-                          <span>{apt.client.clientProfile.address}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Appointment Info */}
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase font-bold mb-2">
-                      Appointment Details
-                    </p>
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={16} className="text-green-500" />
-                        <span>
-                          {new Date(apt.scheduleDate).toLocaleDateString("en-US", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock size={16} className="text-orange-500" />
-                        <span>
-                          {new Date(apt.scheduleDate).toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <AlertCircle size={16} className="text-gray-400" />
-                        <span>
-                          Requested: {new Date(apt.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">{apt.client.firstName} {apt.client.lastName}</h3>
+                  <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
+                    <span className="flex items-center gap-1 font-medium text-slate-700">{apt.client.email}</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1"><MapPin size={14} /> {apt.client.clientProfile?.address || "Location N/A"}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Footer / Actions */}
-              {canManage(apt.status) && (
-                <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 flex gap-3 justify-end">
-                  <button
-                    onClick={() => handleStatusUpdate(apt.id, "REJECTED")}
-                    className="px-4 py-2 bg-red-50 text-red-700 rounded-lg font-medium hover:bg-red-100 transition text-sm flex items-center gap-2"
-                  >
-                    <XCircle size={16} />
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => handleStatusUpdate(apt.id, "CONFIRMED")}
-                    className="px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium hover:bg-green-100 transition text-sm flex items-center gap-2"
-                  >
-                    <CheckCircle size={16} />
-                    Approve
-                  </button>
+              <div className="mt-4 md:mt-0">
+                <StatusBadge status={apt.status} />
+              </div>
+            </div>
+
+            {/* Middle Row: Date & Time */}
+            <div className={`p-4 rounded-lg border ${
+              apt.status === 'PENDING' ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100'
+            } mb-6 flex flex-col md:flex-row gap-6 items-center`}>
+              
+              <div className="flex items-center gap-3">
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-blue-600">
+                  <Calendar size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Requested Date</p>
+                  <p className="text-slate-900 font-bold">{new Date(apt.scheduleDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200 text-blue-600">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Time</p>
+                  <p className="text-slate-900 font-bold">{new Date(apt.scheduleDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+              </div>
+
+              {/* Waiting Indicator */}
+              {apt.status === 'PROPOSED_BY_LAWYER' && (
+                <div className="flex-1 text-right md:pr-4">
+                  <p className="text-sm font-bold text-slate-500 flex items-center justify-end gap-2">
+                    <Hourglass size={16} /> Waiting for client approval...
+                  </p>
                 </div>
               )}
             </div>
-          ))}
+
+            {/* Bottom Row: Actions */}
+            <div className="flex flex-wrap gap-3 justify-end pt-4 border-t border-slate-100">
+              
+              {/* If Client Requested (PENDING) -> Show Confirm Button */}
+              {apt.status === 'PENDING' && (
+                <button 
+                  onClick={() => handleConfirm(apt.id)}
+                  className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-900/10"
+                >
+                  <Check size={18} /> Confirm Request
+                </button>
+              )}
+
+              {/* Reschedule Button (Available unless confirmed/cancelled) */}
+              {apt.status !== 'CONFIRMED' && apt.status !== 'CANCELLED' && apt.status !== 'PROPOSED_BY_LAWYER' && (
+                <button 
+                  onClick={() => {
+                    setRescheduleData(apt);
+                    setNewDate(new Date(apt.scheduleDate).toISOString().slice(0, 16));
+                  }}
+                  className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-bold hover:bg-slate-50 transition"
+                >
+                  <Edit2 size={16} /> Propose New Time
+                </button>
+              )}
+
+              {/* Cancel / Decline */}
+              {apt.status !== 'CANCELLED' && (
+                <button 
+                  onClick={() => handleCancel(apt.id)}
+                  className="flex items-center gap-2 text-red-500 px-4 py-2.5 rounded-lg font-bold hover:bg-red-50 transition"
+                >
+                  <XCircle size={18} /> {apt.status === 'PENDING' ? 'Decline' : 'Cancel'}
+                </button>
+              )}
+            </div>
+
+          </div>
+        ))}
+
+        {filtered.length === 0 && (
+          <div className="text-center py-16 text-slate-400 italic">No appointments found.</div>
+        )}
+      </div>
+
+      {/* RESCHEDULE MODAL */}
+      {rescheduleData && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95">
+            <h3 className="text-xl font-extrabold text-slate-900 mb-2">Propose New Time</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              The client will be notified to accept this change.
+            </p>
+            
+            <form onSubmit={handleRescheduleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Date & Time</label>
+                <input 
+                  type="datetime-local" 
+                  required
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full border border-slate-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-800"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setRescheduleData(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition">
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">
+                  Send Proposal
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
+
     </div>
+  );
+}
+
+// Helper for Badge
+function StatusBadge({ status }: { status: string }) {
+  const styles = {
+    PENDING: "bg-blue-100 text-blue-800 border-blue-200",
+    PROPOSED_BY_LAWYER: "bg-slate-100 text-slate-600 border-slate-200",
+    CONFIRMED: "bg-green-100 text-green-800 border-green-200",
+    CANCELLED: "bg-red-50 text-red-500 border-red-100",
+  };
+
+  const labels = {
+    PENDING: "Action Required",
+    PROPOSED_BY_LAWYER: "Proposal Sent",
+    CONFIRMED: "Confirmed",
+    CANCELLED: "Cancelled",
+  };
+
+  // @ts-ignore
+  const style = styles[status] || styles.PENDING;
+  // @ts-ignore
+  const label = labels[status] || status;
+
+  return (
+    <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${style} flex items-center gap-1.5 w-fit`}>
+      {status === 'CONFIRMED' && <CheckCircle2 size={12} />}
+      {status === 'PENDING' && <AlertCircle size={12} />}
+      {label}
+    </span>
   );
 }

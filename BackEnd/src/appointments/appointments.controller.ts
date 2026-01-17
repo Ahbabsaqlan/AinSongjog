@@ -10,31 +10,35 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 export class AppointmentsController {
   constructor(private readonly service: AppointmentsService) {}
 
+  // --- BOOKING ENDPOINT ---
   @Post('book')
-  @Roles(UserRole.CLIENT)
+  @Roles(UserRole.CLIENT) // <--- CRITICAL: Must be CLIENT
   book(@Request() req, @Body() body: { lawyerId: string; date: string }) {
+    console.log("Booking Request from:", req.user); // Debug Log
     return this.service.bookAppointment(req.user.userId, body.lawyerId, body.date);
   }
 
-  @Get()
-  getAppointments(@Request() req, @Query('status') status?: string) {
-    return this.service.getAppointmentsForUser(req.user.userId, req.user.role, status);
+  @Patch(':id/reschedule')
+  @UseGuards(JwtAuthGuard) // Both roles can access
+  reschedule(@Param('id') id: string, @Request() req, @Body() body: { date: string }) {
+    return this.service.reschedule(id, req.user.userId, body.date);
   }
 
-  @Get(':id')
-  getOne(@Param('id') id: string, @Request() req) {
-    return this.service.findOne(id, req.user.userId, req.user.role);
+  @Patch(':id/confirm')
+  @UseGuards(JwtAuthGuard)
+  confirm(@Param('id') id: string, @Request() req) {
+    return this.service.confirm(id, req.user.userId);
   }
 
-  @Patch(':id/status')
-  @Roles(UserRole.LAWYER)
-  updateStatus(@Param('id') id: string, @Request() req, @Body() body: { status: string }) {
-    return this.service.updateStatus(id, req.user.userId, req.user.role, body.status);
-  }
-
-  @Delete(':id')
-  @Roles(UserRole.CLIENT)
+  @Patch(':id/cancel')
+  @UseGuards(JwtAuthGuard)
   cancel(@Param('id') id: string, @Request() req) {
-    return this.service.cancelAppointment(id, req.user.userId, req.user.role);
+    return this.service.cancel(id, req.user.userId);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  getAll(@Request() req) {
+    return this.service.findAll(req.user.userId, req.user.role);
   }
 }

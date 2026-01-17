@@ -28,6 +28,7 @@ const getFileName = (url: string) => {
 export default function ClientCaseView({ caseData }: { caseData: any }) {
   const router = useRouter();
   const { lawyer } = caseData;
+  
   const [docModalOpen, setDocModalOpen] = useState(false);
 
   // --- DATA PROCESSING ---

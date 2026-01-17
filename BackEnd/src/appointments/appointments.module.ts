@@ -4,11 +4,13 @@ import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './entities/appointment.entity';
 import { User } from '../users/entities/user.entity';
+// Import the new module
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    // Appointments need access to Appointment Table and User Table
-    TypeOrmModule.forFeature([Appointment, User])
+    TypeOrmModule.forFeature([Appointment, User]),
+    NotificationsModule // <--- ADD THIS LINE
   ],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
