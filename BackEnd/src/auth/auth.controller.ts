@@ -23,23 +23,27 @@ export class AuthController {
     return this.authService.completeSignup(dto);
   }
 
-  // --- UPDATED LOGIN LOGIC ---
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req, @Res({ passthrough: true }) res: Response) {
-    // 1. Get the Token and User from Service
     const loginData = await this.authService.login(req.user);
+
+    // Check NODE_ENV to decide security
     const isProduction = process.env.NODE_ENV === 'production';
-    // 2. Set the Cookie
-    // We use 'access_token' as the name of the cookie
+
     res.cookie('access_token', loginData.access_token, {
-      httpOnly: true,   // Security: JavaScript cannot read this (Protects against XSS)
+      httpOnly: true,
+      
+      // Local = False (HTTP), Prod = True (HTTPS)
       secure: isProduction, 
-      sameSite: isProduction ? 'none' : 'lax', 
-      maxAge: 24 * 60 * 60 * 1000, // 1 Day expiration
+      
+      // 'Lax' works for both because of the Proxy!
+      // The browser thinks it's talking to the "Same Site"
+      sameSite: 'lax', 
+      
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
-    // 3. Return response (Note: Token is NOT in the body anymore)
     return {
       message: 'Login successful',
       user: loginData.user,
