@@ -1,15 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 import { toast } from "sonner";
-import { User, MapPin, Phone, CreditCard, Image as ImageIcon } from "lucide-react";
+import { 
+  User, MapPin, Phone, CreditCard, 
+  Edit2, X, Save, ShieldCheck, Mail 
+} from "lucide-react";
+import FileUpload from "@/components/ui/file-upload"; // Ensure this path is correct
 
-// Accept initial data from Server
 export default function ClientProfileForm({ user }: { user: any }) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
   const { clientProfile } = user;
-  
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm({
+
+  // Initialize form with existing data
+  const { register, handleSubmit, setValue, reset, formState: { isSubmitting } } = useForm({
     defaultValues: {
       nid: clientProfile?.nid || "",
       mobileNumber: clientProfile?.mobileNumber || "",
@@ -22,97 +30,190 @@ export default function ClientProfileForm({ user }: { user: any }) {
     try {
       await api.patch("/users/client/profile", data);
       toast.success("Profile Updated Successfully!");
+      setIsEditing(false); // Switch back to view mode
+      router.refresh(); // Refresh Server Data to show new info
     } catch (error: any) {
-      toast.error("Failed to update profile");
+      toast.error(error.response?.data?.message || "Failed to update profile");
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
-        <p className="text-gray-500">Update your personal details to help lawyers identify you.</p>
-      </div>
+  const handleCancel = () => {
+    reset(); // Revert changes
+    setIsEditing(false);
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left Side: Avatar / Info Card */}
-        <div className="md:col-span-1">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center">
-            <div className="w-24 h-24 bg-blue-100 rounded-full mx-auto flex items-center justify-center text-blue-600 mb-4">
-              <User size={40} />
-            </div>
-            <h3 className="font-bold text-gray-800">Client Account</h3>
-            <p className="text-sm text-gray-500 mt-1">Keep your info private until you assign a case.</p>
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      
+      {/* 1. Header Card (Banner & Basic Info) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Banner Background */}
+        <div className="h-32 bg-gradient-to-r from-slate-900 to-slate-800 relative">
+          <div className="absolute top-4 right-4">
+             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20 backdrop-blur-sm">
+                <ShieldCheck size={12} />
+                Secure Client Account
+             </span>
           </div>
         </div>
 
-        {/* Right Side: Form */}
-        <div className="md:col-span-2">
-          <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              
-              {/* NID */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">National ID (NID)</label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    {...register("nid")} 
-                    className="w-full pl-10 border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                    placeholder="Enter NID Number" 
+        <div className="px-8 pb-8">
+          <div className="relative flex justify-between items-end -mt-12 mb-6">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-md">
+                {clientProfile?.photoUrl ? (
+                  <img 
+                    src={clientProfile.photoUrl} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
                   />
-                </div>
+                ) : (
+                  <User size={64} className="text-gray-400" />
+                )}
               </div>
+              {/* Edit Mode: Photo Uploader Overlay isn't needed here, we do it in the form below */}
+            </div>
 
-              {/* Mobile */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+            {/* Action Buttons */}
+            <div>
+              {!isEditing ? (
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition shadow-sm"
+                >
+                  <Edit2 size={16} />
+                  Edit Profile
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={handleCancel}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                  >
+                    <X size={16} />
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleSubmit(onSubmit)}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm disabled:opacity-70"
+                  >
+                    {isSubmitting ? (
+                      <span className="animate-pulse">Saving...</span>
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Name & Email */}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{user.firstName} {user.lastName}</h1>
+            <div className="flex items-center gap-2 text-gray-500 mt-1">
+              <Mail size={16} />
+              <span>{user.email}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Details Form Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <h3 className="text-lg font-bold text-gray-800 mb-6 pb-4 border-b border-gray-100">
+          Personal Information
+        </h3>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          
+          {/* Photo Upload (Only visible in Edit Mode) */}
+          {isEditing && (
+            <div className="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Update Profile Picture</label>
+              <FileUpload 
+                defaultImage={clientProfile?.photoUrl}
+                onUploadComplete={(url) => setValue("photoUrl", url, { shouldDirty: true })} 
+              />
+              <input type="hidden" {...register("photoUrl")} />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            
+            {/* Field: Mobile */}
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Mobile Number</label>
+              {isEditing ? (
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 text-gray-400" size={18} />
                   <input 
                     {...register("mobileNumber")} 
-                    className="w-full pl-10 border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                    className="w-full pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
                     placeholder="017..." 
                   />
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-3 text-gray-900 font-medium p-2">
+                  <div className="bg-blue-50 p-2 rounded-lg text-blue-600">
+                    <Phone size={20} />
+                  </div>
+                  {clientProfile?.mobileNumber || "Not provided"}
+                </div>
+              )}
+            </div>
 
-              {/* Address */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Present Address</label>
+            {/* Field: NID */}
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1.5 uppercase tracking-wider">National ID (NID)</label>
+              {isEditing ? (
+                <div className="relative">
+                  <CreditCard className="absolute left-3 top-3 text-gray-400" size={18} />
+                  <input 
+                    {...register("nid")} 
+                    className="w-full pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                    placeholder="Enter NID" 
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 text-gray-900 font-medium p-2">
+                  <div className="bg-purple-50 p-2 rounded-lg text-purple-600">
+                    <CreditCard size={20} />
+                  </div>
+                  {clientProfile?.nid || "Not verified"}
+                </div>
+              )}
+            </div>
+
+            {/* Field: Address (Full Width) */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-500 mb-1.5 uppercase tracking-wider">Present Address</label>
+              {isEditing ? (
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 text-gray-400" size={18} />
                   <input 
                     {...register("address")} 
-                    className="w-full pl-10 border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                    placeholder="House, Road, Area, City" 
+                    className="w-full pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                    placeholder="Full Address" 
                   />
                 </div>
-              </div>
-
-              {/* Photo URL (Optional) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Profile Photo URL (Optional)</label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    {...register("photoUrl")} 
-                    className="w-full pl-10 border p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                    placeholder="https://..." 
-                  />
+              ) : (
+                <div className="flex items-center gap-3 text-gray-900 font-medium p-2">
+                  <div className="bg-orange-50 p-2 rounded-lg text-orange-600">
+                    <MapPin size={20} />
+                  </div>
+                  {clientProfile?.address || "Address not provided"}
                 </div>
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-slate-900 text-white py-3 rounded-lg font-semibold hover:bg-slate-800 disabled:bg-gray-400 transition"
-              >
-                {isSubmitting ? "Updating..." : "Update Profile"}
-              </button>
-            </form>
+              )}
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import { LawyerProfile } from './users/entities/lawyer-profile.entity';
 import { Case } from './cases/entities/case.entity';
 import { Appointment } from './appointments/entities/appointment.entity';
 import { ClientProfile } from './users/entities/client-profile.entity';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -60,7 +61,8 @@ import { ClientProfile } from './users/entities/client-profile.entity';
     AdminModule,
     CasesModule,
     AppointmentsModule,
-    EmailModule, // <-- Add EmailModule here
+    EmailModule,
+    StorageModule, // <-- Add EmailModule here
   ],
 })
 export class AppModule {}
