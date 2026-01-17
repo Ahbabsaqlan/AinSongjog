@@ -24,4 +24,9 @@ export class UpdateLawyerProfileDto {
   @IsOptional() 
   @IsString() 
   photoUrl?: string;
+
+  @IsOptional() @IsString() lawyerType?: string;
+  @IsOptional() @IsString() currentWorkplace?: string;
+  @IsOptional() @IsString() educationalBackground?: string;
+  @IsOptional() @IsString() practiceAreas?: string;
 }
