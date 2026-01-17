@@ -343,7 +343,7 @@ export default function Home() {
                   )}
 
                   <Link
-                    href="/signup"
+                    href="/login"
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center gap-1"
                   >
                     View Profile <ArrowRight size={14} />

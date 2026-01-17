@@ -18,7 +18,7 @@ export default function LoginPage() {
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
   });
-
+  
   const onSubmit = async (data: LoginValues) => {
     try {
       const res = await api.post("/auth/login", data);
@@ -56,7 +56,10 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-blue-900">AinShongjog</h1>
+          <Link href={'/'} className="text-3xl font-bold  hover:opacity-80 transition">
+            <h1 className="text-3xl font-bold text-blue-900">AinShongjog</h1>
+          </Link>
+          {/* <h1 className="text-3xl font-bold text-blue-900">AinShongjog</h1> */}
           <p className="text-gray-500 mt-2">Login to your account</p>
         </div>
 

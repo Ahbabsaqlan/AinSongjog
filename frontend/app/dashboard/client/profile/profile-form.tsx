@@ -155,7 +155,7 @@ export default function ClientProfileForm({ user }: { user: any }) {
                   <Phone className="absolute left-3 top-3 text-gray-400" size={18} />
                   <input 
                     {...register("mobileNumber")} 
-                    className="w-full pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                    className="w-full text-gray-500 pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
                     placeholder="017..." 
                   />
                 </div>
@@ -177,7 +177,7 @@ export default function ClientProfileForm({ user }: { user: any }) {
                   <CreditCard className="absolute left-3 top-3 text-gray-400" size={18} />
                   <input 
                     {...register("nid")} 
-                    className="w-full pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                    className="w-full text-gray-500 pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
                     placeholder="Enter NID" 
                   />
                 </div>
@@ -199,7 +199,7 @@ export default function ClientProfileForm({ user }: { user: any }) {
                   <MapPin className="absolute left-3 top-3 text-gray-400" size={18} />
                   <input 
                     {...register("address")} 
-                    className="w-full pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
+                    className="w-full text-gray-500 pl-10 border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" 
                     placeholder="Full Address" 
                   />
                 </div>

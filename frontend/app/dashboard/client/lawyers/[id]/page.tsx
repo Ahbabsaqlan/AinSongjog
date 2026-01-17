@@ -52,7 +52,7 @@ export default function LawyerProfileView() {
       {/* 1. HEADER CARD */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         {/* Banner */}
-        <div className="h-48 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative">
+        <div className="h-25 mb-5 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative">
           <div className="absolute top-6 right-6">
              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/20 backdrop-blur-sm">
                 <ShieldCheck size={14} /> Verified Practitioner

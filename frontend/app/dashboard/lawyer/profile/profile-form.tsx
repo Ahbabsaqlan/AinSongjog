@@ -64,7 +64,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
       
       {/* 1. Header Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="h-36 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative">
+        <div className="h-23 mb-5 bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 relative">
           <div className="absolute top-4 right-4">
              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-white border border-white/20 backdrop-blur-sm">
                 <ShieldCheckIcon /> Verified Practitioner
@@ -141,7 +141,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
                 <label className="block text-sm font-medium text-gray-500 mb-1">List your specialties (comma separated)</label>
                 <input 
                   {...register("practiceAreas")} 
-                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                  className="w-full border border-gray-300 text-gray-500 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
                   placeholder="e.g. Criminal Law, Corporate Tax, Family Disputes" 
                 />
               </div>
@@ -163,11 +163,11 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Education</label>
-                  <input {...register("educationalBackground")} className="w-full border p-3 rounded-lg" placeholder="Degree, University, Year" />
+                  <input {...register("educationalBackground")} className="w-full text-gray-500 border p-3 rounded-lg" placeholder="Degree, University, Year" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Bio / About</label>
-                  <textarea {...register("bio")} rows={5} className="w-full border p-3 rounded-lg" placeholder="Tell potential clients about your experience..." />
+                  <textarea {...register("bio")} rows={5} className="w-full text-gray-500 border p-3 rounded-lg" placeholder="Tell potential clients about your experience..." />
                 </div>
               </div>
             ) : (
@@ -211,7 +211,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               {isEditing && (
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">Professional Title</label>
-                  <select {...register("lawyerType")} className="w-full border p-2 rounded-lg bg-white">
+                  <select {...register("lawyerType")} className="w-full text-gray-500 border p-2 rounded-lg bg-white">
                     <option value="">Select Type</option>
                     <option value="Advocate">Advocate</option>
                     <option value="Barrister">Barrister</option>
@@ -225,7 +225,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Current Workplace</label>
                 {isEditing ? (
-                  <input {...register("currentWorkplace")} className="w-full border p-2 rounded-lg" placeholder="Court or Firm Name" />
+                  <input {...register("currentWorkplace")} className="w-full text-gray-500 border p-2 rounded-lg" placeholder="Court or Firm Name" />
                 ) : (
                   <div className="flex items-center gap-3 text-gray-900">
                     <Building size={18} className="text-gray-400" />
@@ -238,7 +238,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Hourly Rate</label>
                 {isEditing ? (
-                  <input {...register("hourlyRate")} type="number" className="w-full border p-2 rounded-lg" placeholder="BDT" />
+                  <input {...register("hourlyRate")} type="number" className="w-full text-gray-500 border p-2 rounded-lg" placeholder="BDT" />
                 ) : (
                   <div className="flex items-center gap-2 text-xl font-bold text-green-700">
                     <DollarSign size={20} />
@@ -251,7 +251,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Bar Council ID</label>
                 {isEditing ? (
-                  <input {...register("barCouncilId")} className="w-full border p-2 rounded-lg" />
+                  <input {...register("barCouncilId")} className="w-full text-gray-500 border p-2 rounded-lg" />
                 ) : (
                   <div className="flex items-center gap-3 text-gray-900 bg-gray-50 p-2 rounded border border-gray-100">
                     <Scale size={16} className="text-gray-500" />
@@ -264,7 +264,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Chamber</label>
                 {isEditing ? (
-                  <textarea {...register("chamberAddress")} rows={2} className="w-full border p-2 rounded-lg" />
+                  <textarea {...register("chamberAddress")} rows={2} className="w-full text-gray-500 border p-2 rounded-lg" />
                 ) : (
                   <div className="flex items-start gap-3 text-gray-900 text-sm">
                     <MapPin size={18} className="text-gray-400 mt-0.5 shrink-0" />
@@ -277,7 +277,7 @@ export default function LawyerProfileForm({ user }: { user: any }) {
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Contact</label>
                 {isEditing ? (
-                  <input {...register("mobileNumber")} className="w-full border p-2 rounded-lg" />
+                  <input {...register("mobileNumber")} className="w-full text-gray-500 border p-2 rounded-lg" />
                 ) : (
                   <div className="flex items-center gap-3 text-gray-900">
                     <Phone size={18} className="text-gray-400" />

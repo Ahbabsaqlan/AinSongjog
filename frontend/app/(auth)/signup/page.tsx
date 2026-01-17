@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { toast, Toaster } from "sonner"; // Notification
+import Link from "next/link"; // <--- 1. IMPORT LINK
+import { toast, Toaster } from "sonner"; 
 import api from "@/lib/axios";
 import { 
   signupInitSchema, 
@@ -50,14 +51,13 @@ export default function SignupPage() {
   };
 
   // 2. Handle OTP Submit
-  // REPLACE THIS FUNCTION
   const onOtpSubmit = async (data: OtpValues) => {
-    console.log("Submitting OTP:", { email, otp: data.otp }); // Debug Log 1
+    console.log("Submitting OTP:", { email, otp: data.otp }); 
 
     try {
       const res = await api.post("/auth/signup/verify", { email, otp: data.otp });
       
-      console.log("Backend Response:", res.data); // Debug Log 2
+      console.log("Backend Response:", res.data); 
 
       if (!res.data.signupToken) {
         console.error("Missing signupToken in response!");
@@ -68,11 +68,11 @@ export default function SignupPage() {
       setSignupToken(res.data.signupToken);
       toast.success("OTP Verified!");
       
-      console.log("Moving to Step 3..."); // Debug Log 3
+      console.log("Moving to Step 3..."); 
       setStep(3);
       
     } catch (error: any) {
-      console.error("OTP Error:", error); // Debug Log 4
+      console.error("OTP Error:", error); 
       console.error("Error Response:", error.response?.data);
       toast.error(error.response?.data?.message || "Invalid OTP");
     }
@@ -179,6 +179,17 @@ export default function SignupPage() {
             </button>
           </form>
         )}
+
+        {/* --- 2. ADDED LOGIN LINK SECTION --- */}
+        <div className="mt-6 text-center text-sm">
+          <p className="text-gray-600">
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-blue-600 hover:underline">
+              Login
+            </Link>
+          </p>
+        </div>
+
       </div>
     </div>
   );

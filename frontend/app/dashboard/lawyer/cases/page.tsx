@@ -137,7 +137,7 @@ export default function LawyerCasesPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="font-bold text-lg">New Case Assignment</h3>
+              <h3 className="font-bold text-gray-500 text-lg">New Case Assignment</h3>
               <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X size={20} />
               </button>
@@ -145,18 +145,18 @@ export default function LawyerCasesPage() {
             
             <form onSubmit={handleSubmit(onCreateSubmit)} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Case Title</label>
-                <input {...register("title", { required: true })} className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Land Dispute" />
+                <label className="block text-gray-500 text-sm font-medium mb-1">Case Title</label>
+                <input {...register("title", { required: true })} className="w-full text-gray-500 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Land Dispute" />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Case Number</label>
-                <input {...register("caseNumber", { required: true })} className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 2024-001" />
+                <label className="block text-gray-500 text-sm font-medium mb-1">Case Number</label>
+                <input {...register("caseNumber", { required: true })} className="w-full text-gray-500 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. 2024-001" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Client Email</label>
-                <input {...register("clientEmail", { required: true })} type="email" className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="client@example.com" />
+                <label className="block text-gray-500 text-sm font-medium mb-1">Client Email</label>
+                <input {...register("clientEmail", { required: true })} type="email" className="w-full text-gray-500 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="client@example.com" />
               </div>
 
               <button 
