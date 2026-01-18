@@ -8,7 +8,9 @@ import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
 import { CasesModule } from './cases/cases.module';
 import { AppointmentsModule } from './appointments/appointments.module';
-import { EmailModule } from './email/email.module'; // <-- Add this
+import { EmailModule } from './email/email.module'; 
+import { StorageModule } from './storage/storage.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 // Entities
 import { User } from './users/entities/user.entity';
@@ -17,8 +19,8 @@ import { LawyerProfile } from './users/entities/lawyer-profile.entity';
 import { Case } from './cases/entities/case.entity';
 import { Appointment } from './appointments/entities/appointment.entity';
 import { ClientProfile } from './users/entities/client-profile.entity';
-import { StorageModule } from './storage/storage.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { Notification } from './notifications/notification.entity';
+
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
         
-        entities: [User, Otp, LawyerProfile, ClientProfile, Case, Appointment], 
+        entities: [User, Otp, LawyerProfile, ClientProfile, Case, Appointment,Notification], 
         autoLoadEntities: true,
         synchronize: true,
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,

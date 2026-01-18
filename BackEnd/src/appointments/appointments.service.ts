@@ -1,63 +1,62 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
 import { User } from '../users/entities/user.entity';
-import { UserRole } from '../common/enums/role.enum';
 import { NotificationService } from '../notifications/notifications.service';
-import { AccountStatus } from 'src/common/enums/account-status.enum';
-
+import { AccountStatus } from '../common/enums/account-status.enum';
 
 @Injectable()
 export class AppointmentsService {
-  
   constructor(
-    @InjectRepository(Appointment) private apptRepo: Repository<Appointment>,
-    @InjectRepository(User) private userRepo: Repository<User>,
-    private notificationService: NotificationService,
+    @InjectRepository(Appointment)
+    private readonly apptRepo: Repository<Appointment>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+    private readonly notificationService: NotificationService,
   ) {}
 
+  // 1. Initial Booking (Client -> Lawyer)
   async bookAppointment(clientId: string, lawyerId: string, dateString: string) {
-    console.log(`[Booking] Client: ${clientId} attempting to book Lawyer: ${lawyerId}`);
-
     const lawyer = await this.userRepo.findOne({ where: { id: lawyerId } });
     const client = await this.userRepo.findOne({ where: { id: clientId } });
 
-    if (!lawyer) throw new BadRequestException('Lawyer not found');
-    if (!client) throw new BadRequestException('Client not found');
+    // FIX for Error: 'client/lawyer is possibly null'
+    // Throwing an error here guarantees to TypeScript that if code continues, 
+    // these variables are NOT null.
+    if (!lawyer) throw new NotFoundException('Lawyer not found');
+    if (!client) throw new NotFoundException('Client not found');
 
-    // Check if the target is actually a lawyer
-    if (lawyer.role !== UserRole.LAWYER) {
-        console.error(`[Booking Failed] Target user ${lawyer.firstName} is a ${lawyer.role}, not a LAWYER`);
-        throw new BadRequestException('Target user is not a lawyer');
-    }
-
-    // Check Status
     if (lawyer.status !== AccountStatus.ACTIVE) {
-        console.error(`[Booking Failed] Lawyer ${lawyer.firstName} is ${lawyer.status}`);
-        throw new ForbiddenException('Lawyer is not currently accepting appointments');
+      throw new ForbiddenException('Lawyer is not available');
     }
 
+    // FIX for Error: 'No overload matches this call'
+    // Pass the objects explicitly to ensure TypeORM uses the single-entity 'create' method
     const appt = this.apptRepo.create({
-        client,
-        lawyer,
-        scheduleDate: new Date(dateString),
-        status: 'PENDING'
+      client: client,
+      lawyer: lawyer,
+      scheduleDate: new Date(dateString),
+      status: 'PENDING',
     });
 
-    const savedAppt = await this.apptRepo.save(appt);
+    // FIX for Error: 'Property id does not exist on type Appointment[]'
+    // We ensure 'saved' is treated as a single Appointment
+    const saved = await this.apptRepo.save(appt);
 
-    // Send Notification
+    // Trigger Notification
     await this.notificationService.triggerNotification(
       lawyerId,
-      "New Appointment Request",
-      `${client.firstName} requested a consultation.`
+      'New Appointment Request',
+      `${client.firstName} requested a consultation.`, // Now safe because we checked if client exists
+      'APPOINTMENT',
+      saved.id      
     );
 
-    return savedAppt;
+    return saved;
   }
 
-  // 1. RESCHEDULE (Propose new time)
+  // 2. Reschedule / Propose New Time
   async reschedule(id: string, userId: string, newDate: string) {
     const appt = await this.apptRepo.findOne({
       where: { id },
@@ -66,85 +65,80 @@ export class AppointmentsService {
 
     if (!appt) throw new NotFoundException('Appointment not found');
 
-    const dateObj = new Date(newDate);
-    if (isNaN(dateObj.getTime())) throw new BadRequestException("Invalid date");
+    const isLawyer = appt.lawyer.id === userId;
+    const recipientId = isLawyer ? appt.client.id : appt.lawyer.id;
 
-    // Logic: If Lawyer updates -> Status: PROPOSED_BY_LAWYER
-    // Logic: If Client updates -> Status: PENDING (Reset to start)
-    if (appt.lawyer.id === userId) {
-      appt.status = 'PROPOSED_BY_LAWYER';
-    } else if (appt.client.id === userId) {
-      appt.status = 'PENDING';
-    } else {
-      throw new ForbiddenException('Not authorized');
-    }
+    appt.status = isLawyer ? 'PROPOSED_BY_LAWYER' : 'PENDING';
+    appt.scheduleDate = new Date(newDate);
+    
+    const saved = await this.apptRepo.save(appt);
 
-    appt.scheduleDate = dateObj;
-    const savedAppt = await this.apptRepo.save(appt);
-
-    // Notify the OTHER party
-    const recipientId = appt.lawyer.id === userId ? appt.client.id : appt.lawyer.id;
     await this.notificationService.triggerNotification(
-        recipientId,
-        "Appointment Update",
-        "A new time has been proposed for your appointment."
+      recipientId,
+      'Schedule Updated',
+      `A new time has been proposed for your appointment.`,
+      'APPOINTMENT',
+      saved.id
     );
 
-    return savedAppt;
+    return saved;
   }
 
-  // 2. ACCEPT PROPOSAL (Confirm)
+  // 3. Confirm (Accepting the current proposal)
   async confirm(id: string, userId: string) {
-    const appt = await this.apptRepo.findOne({
-      where: { id },
-      relations: ['client', 'lawyer'],
+    const appt = await this.apptRepo.findOne({ 
+        where: { id }, 
+        relations: ['client', 'lawyer'] 
     });
 
     if (!appt) throw new NotFoundException('Appointment not found');
 
-    // Only Client can accept a Lawyer's proposal
+    // Simple security logic
     if (appt.status === 'PROPOSED_BY_LAWYER' && appt.client.id !== userId) {
-        throw new ForbiddenException("Only the client can accept this proposal");
+        throw new ForbiddenException('Only the client can accept this proposal');
     }
-    
-    // Only Lawyer can accept a Client's request (PENDING)
     if (appt.status === 'PENDING' && appt.lawyer.id !== userId) {
-        throw new ForbiddenException("Only the lawyer can confirm this request");
+        throw new ForbiddenException('Only the lawyer can confirm this request');
     }
 
     appt.status = 'CONFIRMED';
-    const savedAppt = await this.apptRepo.save(appt);
+    const saved = await this.apptRepo.save(appt);
 
-    // Notify Client
+    const recipientId = appt.lawyer.id === userId ? appt.client.id : appt.lawyer.id;
     await this.notificationService.triggerNotification(
-        appt.client.id,
-        "Appointment Confirmed",
-        `Your consultation with ${appt.lawyer.lastName} is confirmed!`
+      recipientId,
+      'Appointment Confirmed',
+      'Your legal consultation has been confirmed.',
+      'APPOINTMENT',
+      saved.id
     );
 
-    return savedAppt;
+    return saved;
   }
 
-  // 3. CANCEL
+  // 4. Cancel
   async cancel(id: string, userId: string) {
-    const appt = await this.apptRepo.findOne({ where: { id }, relations: ['client', 'lawyer'] });
+    const appt = await this.apptRepo.findOne({ 
+        where: { id }, 
+        relations: ['client', 'lawyer'] 
+    });
+    
     if (!appt) throw new NotFoundException('Appointment not found');
     
     if (appt.client.id !== userId && appt.lawyer.id !== userId) {
-        throw new ForbiddenException("Not authorized");
+        throw new ForbiddenException('Not authorized to cancel this');
     }
 
     appt.status = 'CANCELLED';
     return this.apptRepo.save(appt);
   }
-  
-  // 4. GET MY APPOINTMENTS
+
   async findAll(userId: string, role: string) {
     const query = { [role.toLowerCase()]: { id: userId } };
-    return this.apptRepo.find({ 
-        where: query, 
-        relations: ['client', 'lawyer', 'lawyer.lawyerProfile', 'client.clientProfile'],
-        order: { scheduleDate: 'ASC' }
+    return this.apptRepo.find({
+      where: query,
+      relations: ['client', 'lawyer', 'lawyer.lawyerProfile', 'client.clientProfile'],
+      order: { createdAt: 'DESC' }, 
     });
   }
 }

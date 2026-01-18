@@ -6,6 +6,7 @@ import { User } from '../users/entities/user.entity';
 import { AccountStatus } from '../common/enums/account-status.enum';
 import { UserRole } from '../common/enums/role.enum';
 import { CaseEvent } from './entities/case-event.entity';
+import { NotificationService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class CasesService {
@@ -13,6 +14,7 @@ export class CasesService {
     @InjectRepository(Case) private caseRepo: Repository<Case>,
     @InjectRepository(CaseEvent) private eventRepo: Repository<CaseEvent>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createCase(lawyerId: string, data: { clientEmail: string; title: string; caseNumber: string }) {
@@ -35,8 +37,19 @@ export class CasesService {
         lawyer: lawyer, // Pass the FULL entity object
         client: client  // Pass the FULL entity object
     });
+    
+    const savedCase = await this.caseRepo.save(newCase);
 
-    return this.caseRepo.save(newCase);
+    // 4. TRIGGER NOTIFICATION FOR CLIENT
+    await this.notificationService.triggerNotification(
+      client.id, // The recipient
+      "New Case Assigned", // Title
+      `Advocate ${lawyer.lastName} has assigned you to a new case: ${data.title}`, // Message
+      "CASE", // Type for redirecting
+      savedCase.id // Reference ID for deep-linking
+    );
+
+    return savedCase;
   }
 
   async getCasesForUser(userId: string, role: string) {
@@ -76,6 +89,13 @@ export class CasesService {
       case: caseItem,
       eventDate: new Date(data.eventDate) // Ensure date format
     });
+    await this.notificationService.triggerNotification(
+      caseItem.client.id,
+      "Case Update",
+      `Your case "${caseItem.title}" has a new update.`,
+      "CASE",      // <--- TYPE
+      caseItem.id  // <--- REFERENCE ID (The Case UUID)
+    );
 
     return this.eventRepo.save(event);
   }
@@ -104,6 +124,13 @@ export class CasesService {
       attachments: data.attachments // Full array replace
     });
 
+    await this.notificationService.triggerNotification(
+      event.case.client.id,
+      "Case Update",
+      `Your case "${event.case.title}" has a new update.`,
+      "CASE",      // <--- TYPE
+      event.case.id  // <--- REFERENCE ID (The Case UUID)
+    );
     return this.eventRepo.save(event);
   }
 
@@ -115,6 +142,14 @@ export class CasesService {
     if (!caseItem.documents) caseItem.documents = [];
     
     caseItem.documents.push(fileUrl);
+
+    await this.notificationService.triggerNotification(
+      caseItem.client.id,
+      "Case Update",
+      `Your case "${caseItem.title}" has a new update.`,
+      "CASE",      // <--- TYPE
+      caseItem.id  // <--- REFERENCE ID (The Case UUID)
+    );
     return this.caseRepo.save(caseItem);
   }
 
@@ -127,6 +162,14 @@ export class CasesService {
     }
 
     caseItem.status = status as any;
+
+    await this.notificationService.triggerNotification(
+      caseItem.client.id,
+      "Case Update",
+      `Your case "${caseItem.title}" has a new update.`,
+      "CASE",      // <--- TYPE
+      caseItem.id  // <--- REFERENCE ID (The Case UUID)
+    );
     return this.caseRepo.save(caseItem);
   }
 
@@ -139,6 +182,14 @@ export class CasesService {
     }
 
     caseItem.hearingDate = hearingDateString ? new Date(hearingDateString) : null;
+
+    await this.notificationService.triggerNotification(
+      caseItem.client.id,
+      "Case Update",
+      `Your case "${caseItem.title}" has a new update.`,
+      "CASE",      // <--- TYPE
+      caseItem.id  // <--- REFERENCE ID (The Case UUID)
+    );
     return this.caseRepo.save(caseItem);
   }
 }
