@@ -34,10 +34,8 @@ export default function BookingModal({
       return;
     }
 
-    // Combine date and time into ISO string
     const dateTimeString = new Date(`${date}T${time}`).toISOString();
 
-    // Validate that the date is in the future
     if (new Date(dateTimeString) <= new Date()) {
       toast.error("Please select a future date and time");
       return;

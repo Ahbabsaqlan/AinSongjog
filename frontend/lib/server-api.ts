@@ -8,9 +8,6 @@ export const getCaseServerSide = async (id: string) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
-  
-  console.log(`[ServerFetch] Token found: ${token ? "YES" : "NO"}`);
-
   if (!token) return null;
 
 
@@ -23,7 +20,6 @@ export const getCaseServerSide = async (id: string) => {
       },
     });
     
-    console.log(`[ServerFetch] Success!`);
     return res.data;
   } catch (error: any) {
     
@@ -33,6 +29,23 @@ export const getCaseServerSide = async (id: string) => {
         console.error("[ServerFetch] Data:", error.response.data);
     }
     return null;
+  }
+};
+
+export const getCasesServerSide = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+  if (!token) return [];
+
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000';
+
+  try {
+    const res = await axios.get(`${backendUrl}/cases`, {
+      headers: { Cookie: `access_token=${token}` },
+    });
+    return res.data;
+  } catch (error) {
+    return [];
   }
 };
 
