@@ -11,9 +11,7 @@ export const getCaseServerSide = async (id: string) => {
   if (!token) return null;
 
 
-  try {
-    console.log(`[ServerFetch] Requesting: ${getBackendUrl()}/cases/${id}`);
-    
+  try {    
     const res = await axios.get(`${getBackendUrl()}/cases/${id}`, {
       headers: {
         Cookie: `access_token=${token}`,
@@ -22,8 +20,7 @@ export const getCaseServerSide = async (id: string) => {
     
     return res.data;
   } catch (error: any) {
-    
-    console.error("[ServerFetch] Error:", error.message);
+    console.error("[ServerFetch] Error fetching case:", error.message);
     if (error.response) {
         console.error("[ServerFetch] Status:", error.response.status);
         console.error("[ServerFetch] Data:", error.response.data);

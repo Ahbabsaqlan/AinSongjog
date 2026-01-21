@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Pusher from "pusher-js";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation"; // Added for instant data refresh
+import { useRouter } from "next/navigation";
 
 export default function RealtimeNotifications({ userId }: { userId: string }) {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function RealtimeNotifications({ userId }: { userId: string }) {
       return;
     }
 
-    // Disable console logs in production for a cleaner experience
+    
     Pusher.logToConsole = process.env.NODE_ENV === 'development'; 
 
     const pusher = new Pusher(key, {
@@ -32,19 +32,14 @@ export default function RealtimeNotifications({ userId }: { userId: string }) {
     // Bind to the notification event
     channel.bind("notification", (data: any) => {
       // 1. UPDATE SIDEBAR BADGE
-      // This triggers the fetchUnreadCount logic in your DashboardLayout
       window.dispatchEvent(new Event("new-notification"));
-
-      // 2. REFRESH SERVER DATA
-      // This tells Next.js to re-fetch the data for the current route
-      // (e.g., if you're on the Case page, it updates the status/timeline automatically)
       router.refresh();
 
       // 3. PLAY NOTIFICATION SOUND
       const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
       audio.play().catch(() => console.log("Audio playback was prevented by browser policy."));
 
-      // 4. SHOW BEAUTIFUL TOAST
+      // 4. SHOW TOAST
       toast.success(data.title, {
         description: data.message,
         duration: 8000,

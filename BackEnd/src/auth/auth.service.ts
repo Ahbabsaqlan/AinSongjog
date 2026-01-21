@@ -210,7 +210,6 @@ export class AuthService {
       });
       
       if (!user) {
-        // For security, don't reveal if user exists or not
         return { message: 'If an account exists, a reset email has been sent' };
       }
   
@@ -250,7 +249,7 @@ export class AuthService {
       }
     }
   
-    // 7. Reset Password (Optional - you can add this later)
+    // 7. Reset Password (Optional)
     async resetPassword(token: string, newPassword: string) {
       try {
         const payload = this.jwtService.verify(token, {

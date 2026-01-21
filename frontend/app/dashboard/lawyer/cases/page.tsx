@@ -62,10 +62,8 @@ export default function LawyerCasesPage() {
   };
 
   return (
-    // --- MODIFICATION: Added responsive padding to the main container ---
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      {/* --- MODIFICATION: Stacks on mobile, row on larger screens --- */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <div className="text-center sm:text-left">
           <h1 className="text-2xl font-bold text-gray-800">My Cases</h1>
@@ -73,7 +71,6 @@ export default function LawyerCasesPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          // --- MODIFICATION: Full width on mobile, auto on larger screens ---
           className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm"
         >
           <Plus size={20} />
@@ -91,7 +88,6 @@ export default function LawyerCasesPage() {
           <p className="text-gray-500 mt-1">Create a case to get started.</p>
         </div>
       ) : (
-        // --- MODIFICATION: Responsive grid columns ---
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {cases.map((c) => (
             <Link 

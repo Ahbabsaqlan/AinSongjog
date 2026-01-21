@@ -12,7 +12,7 @@ import { User } from '../users/entities/user.entity';
 import { Otp } from './entities/otp.entity';
 import { LawyerProfile } from '../users/entities/lawyer-profile.entity';
 import { ClientProfile } from '../users/entities/client-profile.entity';
-import { EmailModule } from '../email/email.module'; // <-- Import EmailModule
+import { EmailModule } from '../email/email.module'; 
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { EmailModule } from '../email/email.module'; // <-- Import EmailModule
       }),
       inject: [ConfigService],
     }),
-    EmailModule, // <-- Add EmailModule here
+    EmailModule, 
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],

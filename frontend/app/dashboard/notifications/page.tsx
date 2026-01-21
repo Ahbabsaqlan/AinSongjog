@@ -21,7 +21,7 @@ export default function NotificationsPage() {
   const markRead = async (id: string) => {
     await api.patch(`/notifications/${id}/read`);
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    // Optional: Decrement global badge via window event
+    
   };
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
