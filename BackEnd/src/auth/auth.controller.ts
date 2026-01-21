@@ -28,19 +28,12 @@ export class AuthController {
   async login(@Request() req, @Res({ passthrough: true }) res: Response) {
     const loginData = await this.authService.login(req.user);
 
-    // Check NODE_ENV to decide security
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookie('access_token', loginData.access_token, {
       httpOnly: true,
-      
-      // Local = False (HTTP), Prod = True (HTTPS)
       secure: isProduction, 
-      
-      // 'Lax' works for both because of the Proxy!
-      // The browser thinks it's talking to the "Same Site"
       sameSite: 'lax', 
-      
       maxAge: 24 * 60 * 60 * 1000,
     });
 

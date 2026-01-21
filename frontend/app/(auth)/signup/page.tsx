@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // <--- 1. IMPORT LINK
+import Link from "next/link"; 
 import { toast, Toaster } from "sonner"; 
 import api from "@/lib/axios";
 import { 
@@ -180,7 +180,7 @@ export default function SignupPage() {
           </form>
         )}
 
-        {/* --- 2. ADDED LOGIN LINK SECTION --- */}
+        {/* --- 2. LOGIN LINK SECTION --- */}
         <div className="mt-6 text-center text-sm">
           <p className="text-gray-600">
             Already have an account?{" "}

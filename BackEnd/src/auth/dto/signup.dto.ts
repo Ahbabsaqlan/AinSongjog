@@ -17,7 +17,6 @@ export class InitSignupDto {
   @IsEnum(UserRole)
   role: UserRole;
   
-  // NOTE: BarCouncilId removed from here. It is now part of the profile update step.
 }
 
 export class VerifyOtpDto {

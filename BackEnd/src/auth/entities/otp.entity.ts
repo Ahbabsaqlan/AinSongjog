@@ -11,7 +11,6 @@ export class Otp {
   @Column()
   otpCode: string;
 
-  // We store the user's initial data here until they verify and set a password
   @Column({ type: 'jsonb' })
   tempUserData: any;
 

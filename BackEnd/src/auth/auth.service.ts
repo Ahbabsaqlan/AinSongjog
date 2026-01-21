@@ -17,7 +17,7 @@ import { InitSignupDto, VerifyOtpDto, CompleteSignupDto } from './dto/signup.dto
 import { UserRole } from '../common/enums/role.enum';
 import { AccountStatus } from '../common/enums/account-status.enum';
 import { ClientProfile } from 'src/users/entities/client-profile.entity';
-import { EmailService } from '../email/email.service'; // <-- Import EmailService
+import { EmailService } from '../email/email.service'; 
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
     @InjectRepository(LawyerProfile) private lawyerProfileRepo: Repository<LawyerProfile>, 
     @InjectRepository(ClientProfile) private clientProfileRepo: Repository<ClientProfile>,
     private jwtService: JwtService,
-    private emailService: EmailService, // <-- Replace MailerService with EmailService
+    private emailService: EmailService, 
   ) {}
 
   // 1. Init Signup
@@ -128,7 +128,6 @@ export class AuthService {
           );
         } catch (emailError) {
           console.error('Welcome email failed:', emailError);
-          // Don't throw error, just log it
         }
     }
 
@@ -144,7 +143,6 @@ export class AuthService {
         );
       } catch (emailError) {
         console.error('Welcome email failed:', emailError);
-        // Don't throw error, just log it
       }
     }
     
@@ -203,7 +201,7 @@ export class AuthService {
     };
   }
 
-  // 6. Forgot Password (Optional - you can add later)
+
     // 6. Forgot Password
     async forgotPassword(email: string) {
       const user = await this.userRepo.findOne({ 

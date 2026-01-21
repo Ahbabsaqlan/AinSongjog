@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getCaseServerSide } from "@/lib/server-api";
 import LawyerCaseView from "./lawyer-view"; // Import the client view
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ id: string }>; // Next.js 15: Params is a Promise
@@ -29,7 +29,7 @@ export default async function Page({ params }: Props) {
 
   // Security Redirect if case doesn't exist or user doesn't have permission
   if (!caseData) {
-    redirect("/dashboard/lawyer");
+    notFound();
   }
 
   // Pass data to the Client Component for interactivity
