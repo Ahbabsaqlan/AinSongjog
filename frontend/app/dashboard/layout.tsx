@@ -5,7 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { 
   LogOut, User, FileText, Gavel, ShieldCheck, Search, Calendar, 
-  Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, Bell 
+  Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, Bell, 
+  Smartphone
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import api from "@/lib/axios"; 
@@ -61,7 +62,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const getLinks = () => {
     if (!user) return [];
     const links = [];
-    if (user.role === "ADMIN") links.push({ href: "/dashboard/admin", label: "Approvals", icon: ShieldCheck });
+    if (user.role === "ADMIN") links.push({ href: "/dashboard/admin", label: "Approvals", icon: ShieldCheck },{ href: "/dashboard/admin/whatsapp", label: "Bot Settings", icon: Smartphone });
     if (user.role === "LAWYER") {
       links.push(
         { href: "/dashboard/lawyer", label: "Overview", icon: LayoutDashboard },

@@ -20,6 +20,7 @@ import { Case } from './cases/entities/case.entity';
 import { Appointment } from './appointments/entities/appointment.entity';
 import { ClientProfile } from './users/entities/client-profile.entity';
 import { Notification } from './notifications/notification.entity';
+import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 
 @Module({
@@ -67,6 +68,7 @@ import { Notification } from './notifications/notification.entity';
     EmailModule,
     StorageModule,
     NotificationsModule,
+    WhatsappModule,
   ],
 })
 export class AppModule {}

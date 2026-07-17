@@ -5,6 +5,7 @@ import { Appointment } from './entities/appointment.entity';
 import { User } from '../users/entities/user.entity';
 import { NotificationService } from '../notifications/notifications.service';
 import { AccountStatus } from '../common/enums/account-status.enum';
+import { WhatsappService } from 'src/whatsapp/whatsapp.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -14,6 +15,7 @@ export class AppointmentsService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly notificationService: NotificationService,
+    private whatsappService: WhatsappService,
   ) {}
 
   // 1. Initial Booking (Client -> Lawyer)
@@ -52,6 +54,13 @@ export class AppointmentsService {
       'APPOINTMENT',
       saved.id      
     );
+    if (lawyer.lawyerProfile?.mobileNumber) {
+      await this.whatsappService.sendWhatsAppMessage(
+          client.id, // Sender (The Client)
+          lawyer.lawyerProfile.mobileNumber, // Recipient
+          `Hello Advocate ${lawyer.lastName}, I have requested a new appointment on ${dateString}. Please check your dashboard.`
+      );
+   }
 
     return saved;
   }
@@ -80,6 +89,14 @@ export class AppointmentsService {
       'APPOINTMENT',
       saved.id
     );
+
+    if (appt.lawyer.lawyerProfile?.mobileNumber) {
+      await this.whatsappService.sendWhatsAppMessage(
+          appt.client.id, // Sender (The Client)
+          appt.lawyer.lawyerProfile.mobileNumber, // Recipient
+          `Hello Advocate ${appt.lawyer.lastName}, I have requested a new appointment on ${newDate}. Please check your dashboard.`
+      );
+   }
 
     return saved;
   }
@@ -112,6 +129,14 @@ export class AppointmentsService {
       'APPOINTMENT',
       saved.id
     );
+
+    if (appt.client.clientProfile?.mobileNumber) {
+      await this.whatsappService.sendWhatsAppMessage(
+         userId, // Sender (The Lawyer)
+         appt.client.clientProfile.mobileNumber,
+         `Your appointment has been confirmed for ${appt.scheduleDate}.`
+      );
+    }
 
     return saved;
   }
